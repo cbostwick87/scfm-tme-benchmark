@@ -1,0 +1,56 @@
+{
+  "schema": "scfmbench.run_manifest/1",
+  "phase": "A_setup",
+  "timestamp_utc": "2026-07-31T19:15:00Z",
+  "gpu": {
+    "device_name": "Tesla T4",
+    "capability": "7.5",
+    "vram_MiB": 14912,
+    "cuda_runtime": "12.1",
+    "torch": "2.3.1+cu121",
+    "cuda_is_available": true,
+    "fp16_matmul_finite": true,
+    "bf16_reported_supported": true,
+    "bf16_usable_in_practice": false,
+    "measured_TFLOPs": {
+      "fp32": 4.42,
+      "fp16": 26.3,
+      "bf16": 2.45
+    },
+    "precision_decision": "fp16 autocast pinned everywhere. bf16 is REPORTED as supported by torch.cuda.is_bf16_supported() on this Turing card and a bf16 matmul completes without error, but it is emulated: 2.45 TFLOP/s vs 26.3 for fp16 (10.7x slower) and slower even than fp32. A capability-flag check would have selected it silently."
+  },
+  "compute": "single NVIDIA T4 GPU instance, 4 vCPU, 16 GiB RAM",
+  "environment": {
+    "name": "scfm-bench",
+    "python": "3.11",
+    "lockfiles": [
+      "conda-lock.txt",
+      "pip-freeze.txt",
+      "environment.resolved.yml"
+    ]
+  },
+  "packages": {
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.9.0",
+    "statsmodels": "0.14.6",
+    "matplotlib": "3.11.1",
+    "scanpy": "1.11.5",
+    "anndata": "0.10.8",
+    "torch": "2.3.1+cu121",
+    "transformers": "4.44.2",
+    "scvi-tools": "1.1.6.post2",
+    "harmonypy": "2.0.0",
+    "celltypist": "1.7.1",
+    "cellxgene-census": "1.18.0",
+    "pyarrow": "25.0.0"
+  },
+  "census_version_pinned": "2025-11-08",
+  "tests": {
+    "suite": "tests/",
+    "passed": 29,
+    "failed": 0,
+    "note": "includes negative controls proving every leakage assertion fires"
+  }
+}

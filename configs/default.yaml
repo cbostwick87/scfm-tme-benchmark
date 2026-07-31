@@ -20,11 +20,35 @@ data:
   figures: figures
 
 corpus:
-  # Populated by stage.data after the duplicate-accession resolution.
-  # `group` is the leave-dataset-out grouping unit: two TISCH2 entries sharing a
-  # GSE accession are ONE unit, never two, or S3 leaks.
+  # Selected by pre-specified criteria applied uniformly to all 28 screened TISCH2
+  # entries (see results/dataset_screening.csv for the full screen, including
+  # every rejection and its reason):
+  #   C1  >= 3 donors                  -- a three-way donor split under S2 needs >= 3
+  #   C2  >= 3 mappable immune classes -- multi-class immune annotation
+  #   C3  >= 500 mappable immune cells -- enough to support the label-budget sweep
+  # then, for breadth, at most 2 datasets per cancer type ranked on immune-class
+  # count and immune-cell yield.
+  #
+  # `group` is the LEAVE-DATASET-OUT holdout unit and is the GSE accession, not the
+  # dataset name. Entries sharing an accession are one study and therefore one group,
+  # however many TISCH2 entries they produce -- otherwise S3 places the same study on
+  # both sides of the split and cross-dataset transfer scores inflate silently.
   target_cells_per_dataset: [10000, 30000]
-  datasets: []                    # filled by s01; see results/T1_dataset_manifest.csv
+  max_datasets_per_cancer: 2
+  datasets:
+      - {name: BRCA_GSE161529, cancer: BRCA, group: GSE161529, donors: 53, source: tisch2}
+      - {name: BRCA_GSE176078, cancer: BRCA, group: GSE176078, donors: 26, source: tisch2}
+      - {name: CHOL_GSE125449_aPD1aPDL1aCTLA4, cancer: CHOL, group: GSE125449, donors: 10, source: tisch2}
+      - {name: CRC_GSE108989, cancer: CRC, group: GSE108989, donors: 12, source: tisch2}
+      - {name: CRC_GSE146771_10X, cancer: CRC, group: GSE146771, donors: 10, source: tisch2}
+      - {name: HNSC_GSE103322, cancer: HNSC, group: GSE103322, donors: 21, source: tisch2}
+      - {name: LIHC_GSE140228_10X, cancer: LIHC, group: GSE140228, donors: 5, source: tisch2}
+      - {name: LIHC_GSE98638, cancer: LIHC, group: GSE98638, donors: 6, source: tisch2}
+      - {name: NSCLC_GSE127465, cancer: NSCLC, group: GSE127465, donors: 7, source: tisch2}
+      - {name: NSCLC_GSE131907, cancer: NSCLC, group: GSE131907, donors: 44, source: tisch2}
+      - {name: PAAD_GSE111672, cancer: PAAD, group: GSE111672, donors: 3, source: tisch2}
+      - {name: PAAD_GSE154778, cancer: PAAD, group: GSE154778, donors: 16, source: tisch2}
+      - {name: STAD_GSE134520, cancer: STAD, group: GSE134520, donors: 13, source: tisch2}
 
 census:
   version: "2025-11-08"           # PINNED LTS. Never "latest" -- reproducibility depends on it.

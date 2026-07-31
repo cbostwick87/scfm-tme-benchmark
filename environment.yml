@@ -45,4 +45,18 @@ dependencies:
       - harmonypy
       - celltypist
       - cellxgene-census
-      - geneformer
+# ------------------------------------------------------------------
+# Foundation-model packages are installed SEPARATELY, not from this solve:
+#
+#   Geneformer  is distributed from its own repository rather than PyPI:
+#                 pip install git+https://huggingface.co/ctheodoris/Geneformer
+#   scGPT       needs flash-attn, which is version-fragile and is NOT expected
+#               to build on a Turing-class GPU. Install without it and use the
+#               standard PyTorch attention backend:
+#                 pip install scgpt --no-deps   (then check imports)
+#
+# They are kept out of the core solve deliberately: a failure in either must not
+# be able to break the environment that every baseline and every statistic
+# depends on. The exact commands used, and any fallback taken, are recorded in
+# DECISIONS.md and results/run_manifest.json.
+# ------------------------------------------------------------------
