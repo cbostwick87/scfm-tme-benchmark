@@ -1,0 +1,48 @@
+# Project environment. Sited on a fast volume with >=20 GiB free; never on
+# throughput-optimised HDD (random-read performance makes conda unusable there).
+#
+# Precision note: the reference GPU is a Turing-class T4 -- fp16 autocast is
+# supported, bf16 is NOT. The pipeline asserts this at startup rather than
+# discovering it mid-run.
+name: scfm-bench
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - pip
+  - numpy<2
+  - scipy
+  - pandas
+  - pyarrow
+  - scikit-learn
+  - statsmodels
+  - matplotlib
+  - seaborn
+  - h5py
+  - pyyaml
+  - tqdm
+  - pytest
+  - ruff
+  - scanpy>=1.10
+  - anndata>=0.10
+  - leidenalg
+  - igraph
+  - scikit-misc          # required by scanpy highly_variable_genes flavor="seurat_v3"
+  - pip:
+      # torch cu121 wheels ship their own CUDA runtime; no system nvcc needed
+      - torch==2.3.1
+      - transformers>=4.40
+      - scvi-tools==1.1.6.post2
+      # scvi-tools 1.1.x pulls jax/flax/numpyro and unpinned resolution breaks.
+      # This coherent set is required; jax runs on CPU here, torch owns the GPU.
+      - jax==0.4.28
+      - jaxlib==0.4.28
+      - flax==0.8.5
+      - numpyro==0.13.2
+      - orbax-checkpoint<0.6
+      - chex<0.1.87
+      - harmonypy
+      - celltypist
+      - cellxgene-census
+      - geneformer

@@ -1,0 +1,19 @@
+# ============================================================
+# Phase 0 PILOT -- mandatory gate before the full run.
+# Inherits configs/default.yaml; overrides only the grid extent.
+# Purpose: prove every model loads, every baseline runs, splits behave,
+# leakage assertions fire, and the results schema is correct.
+# ============================================================
+inherit: configs/default.yaml
+
+run:
+  name: pilot
+  seeds: [0, 1]
+
+corpus:
+  n_datasets: 2
+
+splits:
+  scheme_ids: [S1_within_dataset]
+
+label_budgets: [10, null]

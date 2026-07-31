@@ -1,0 +1,35 @@
+# ============================================================
+# Working immune cell-type taxonomy for TME annotation.
+# Author labels -> Cell Ontology term -> working class.
+# Populated and validated by stage.harmonise against the ACTUAL author
+# vocabularies present in the corpus; the classes below are the target
+# collapse set, not an assumption about what the data contains.
+# Any author label that cannot be mapped confidently is DROPPED and counted
+# in results/T4_label_harmonisation.csv -- never silently coerced.
+# ============================================================
+working_classes:
+  # --- immune ---
+  - {name: CD4_T,        cl: "CL:0000624", compartment: immune}
+  - {name: CD8_T,        cl: "CL:0000625", compartment: immune}
+  - {name: Treg,         cl: "CL:0000815", compartment: immune}
+  - {name: NK,           cl: "CL:0000623", compartment: immune}
+  - {name: B,            cl: "CL:0000236", compartment: immune}
+  - {name: Plasma,       cl: "CL:0000786", compartment: immune}
+  - {name: Monocyte,     cl: "CL:0000576", compartment: immune}
+  - {name: Macrophage,   cl: "CL:0000235", compartment: immune}
+  - {name: DC,           cl: "CL:0000451", compartment: immune}
+  - {name: Mast,         cl: "CL:0000097", compartment: immune}
+  - {name: Neutrophil,   cl: "CL:0000775", compartment: immune}
+  # --- non-immune context classes (kept: they are the confusable background) ---
+  - {name: Malignant,    cl: "CL:0001064", compartment: non_immune}
+  - {name: Fibroblast,   cl: "CL:0000057", compartment: non_immune}
+  - {name: Endothelial,  cl: "CL:0000115", compartment: non_immune}
+
+# Explicit rules for labels that must NOT be silently absorbed into a class.
+drop_rules:
+  - reason: "ambiguous granularity -- cannot be assigned to a single working class"
+    patterns: ["Immune cells", "Lymphocyte", "Myeloid", "Others", "Unknown", "Unclassified"]
+  - reason: "doublet or low-quality call"
+    patterns: ["Doublet", "Doublets", "Low quality"]
+  - reason: "proliferating compartment spans multiple identities"
+    patterns: ["Proliferating", "Cycling", "Prolif*"]

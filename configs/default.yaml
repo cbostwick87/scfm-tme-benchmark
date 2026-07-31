@@ -1,0 +1,110 @@
+# ============================================================
+# scfm-tme-benchmark -- default (full study) configuration
+# Config-driven by design: no analysis constant is hard-coded in a script.
+# Paths resolve against ${SCFM_DATA_ROOT}; nothing here encodes a host path.
+# ============================================================
+run:
+  name: full
+  seeds: [0, 1, 2, 3, 4]          # 5 independent seeds per grid cell
+  n_workers: 3                    # 4 vCPU / 15 GiB shared -- see memory note below
+  max_worker_rss_gb: 3.5          # 3 workers x 3.5 GiB leaves headroom; OOM is a design error
+
+data:
+  root: ${SCFM_DATA_ROOT}
+  raw: ${SCFM_DATA_ROOT}/raw
+  processed: ${SCFM_DATA_ROOT}/processed
+  embeddings: ${SCFM_DATA_ROOT}/embeddings
+  models: ${SCFM_DATA_ROOT}/models
+  splits: ${SCFM_DATA_ROOT}/splits
+  results: results
+  figures: figures
+
+corpus:
+  # Populated by stage.data after the duplicate-accession resolution.
+  # `group` is the leave-dataset-out grouping unit: two TISCH2 entries sharing a
+  # GSE accession are ONE unit, never two, or S3 leaks.
+  target_cells_per_dataset: [10000, 30000]
+  datasets: []                    # filled by s01; see results/T1_dataset_manifest.csv
+
+census:
+  version: "2025-11-08"           # PINNED LTS. Never "latest" -- reproducibility depends on it.
+  organism: "Homo sapiens"
+
+qc:
+  # Explicit thresholds. No undocumented scanpy defaults.
+  min_genes_per_cell: 200
+  max_pct_mito: 20.0
+  min_cells_per_gene: 3
+  mito_prefix: "MT-"
+
+harmonisation:
+  gene_reference: "hgnc"          # single reference for all datasets
+  taxonomy: configs/taxonomy.yaml
+  drop_unmappable_labels: true    # DROP and report -- never silently coerce
+
+splits:
+  scheme_ids: [S1_within_dataset, S2_leave_donor_out, S3_leave_dataset_out]
+  fractions: {train: 0.60, calibration: 0.20, test: 0.20}
+  # The calibration partition is RESERVED for Project B (conformal prediction).
+  # Project A must not read it. Enforced by splits.assert_calibration_untouched().
+  calibration_is_reserved: true
+
+label_budgets: [5, 10, 25, 50, 100, null]   # null == all available per class
+
+embeddings:
+  scgpt:
+    enabled: true
+    checkpoint: whole-human
+    n_hvg: 3000
+    batch_size: 64
+    out_dim: 512
+    precision: fp16               # T4 is Turing: fp16 OK, bf16 NOT supported
+  geneformer:
+    enabled: true
+    checkpoint: Geneformer-V2-104M
+    input_size: 4096
+    layer: -1                     # final layer
+    pooling: mean
+    precision: fp16
+  hvg_pca:
+    enabled: true
+    n_hvg_grid: [1000, 2000, 3000]     # tuned by inner CV on TRAIN only
+    n_pcs_grid: [30, 50, 100]
+    hvg_flavor: seurat_v3
+    incremental_pca: true              # never dense full-matrix PCA
+  scvi:
+    enabled: true
+    n_latent: 30
+    max_epochs: 200
+    early_stopping: true
+  harmony:
+    enabled: true
+    batch_key: [dataset, donor]
+  celltypist:
+    enabled: true
+    model: Immune_All_Low.pkl
+
+classifier:
+  # SAME head for every embedding. The experiment isolates the REPRESENTATION.
+  kind: logistic_regression
+  penalty: l2
+  multi_class: multinomial
+  solver: lbfgs
+  max_iter: 2000
+  C_grid: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
+  inner_cv_folds: 5               # within TRAIN only, never test
+
+metrics:
+  primary: macro_f1
+  secondary: [accuracy, balanced_accuracy, per_class_f1, per_class_precision, per_class_recall]
+
+statistics:
+  primary_contrast: "scfm_minus_hvg_pca"
+  aggregate_seeds_before_testing: true    # datasets are the unit of replication
+  test: wilcoxon_signed_rank
+  multiple_comparison: benjamini_hochberg
+  bootstrap:
+    n_resamples: 10000
+    resample_unit: dataset               # resample datasets, not cells
+    ci_level: 0.95
+  report_effect_size_always: true
