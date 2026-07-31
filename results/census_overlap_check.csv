@@ -1,0 +1,14 @@
+accession,study,doi,census_doi_match,census_first_author_match,matched_collections
+GSE161529,"Pal et al. 2021 EMBO J, human breast atlas",10.15252/embj.2020107333,0,0,
+GSE176078,"Wu et al. 2021 Nat Genet, breast cancer atlas",10.1038/s41588-021-00911-1,13,0,A single-cell and spatially resolved atlas of human breast cancers
+GSE127465,"Zilionis et al. 2019 Immunity, lung cancer myeloid",10.1016/j.immuni.2019.03.009,0,0,
+GSE125449,"Ma et al. 2019 Cancer Cell, liver/biliary tumours",10.1016/j.ccell.2019.08.007,0,0,
+GSE146771,"Zhang et al. 2020 Cell, colorectal TME",10.1016/j.cell.2020.03.048,0,0,
+GSE108989,"Zhang et al. 2018 Nature, colorectal T cells",10.1038/s41586-018-0694-x,0,0,
+GSE103322,"Puram et al. 2017 Cell, HNSCC",10.1016/j.cell.2017.10.044,0,0,
+GSE140228,"Zhang et al. 2019 Cell, liver cancer immune landscape",10.1016/j.cell.2019.10.003,0,0,
+GSE98638,"Zheng et al. 2017 Cell, HCC T cells",10.1016/j.cell.2017.05.035,0,0,
+GSE131907,"Kim et al. 2020 Nat Commun, lung adenocarcinoma",10.1038/s41467-020-16164-1,0,0,
+GSE111672,"Moncada et al. 2020 Nat Biotechnol, PDAC",10.1038/s41587-019-0392-8,0,0,
+GSE154778,"Lin et al. 2020 Genome Med, PDAC metastasis",10.1186/s13073-020-00776-9,0,0,
+GSE134520,"Zhang et al. 2019 Cell Rep, gastric premalignancy",10.1016/j.celrep.2019.10.076,0,0,
