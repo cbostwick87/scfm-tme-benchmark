@@ -93,7 +93,11 @@ def main(argv: list[str] | None = None) -> int:
     out_csv = pathlib.Path(args.out) if args.out else res / "T2_results_long.csv"
 
     idx = pd.read_parquet(split_dir / "cell_index.parquet")
-    reps = args.representations or list(cfg["representations"])
+    # Representations are whatever is enabled in the config's embeddings block --
+    # a single source of truth, so an arm cannot be silently dropped from the sweep
+    # while still appearing configured.
+    reps = args.representations or [k for k, v in cfg["embeddings"].items()
+                                    if isinstance(v, dict) and v.get("enabled")]
     budgets = cfg["label_budgets"]
     grid = cfg["classifier"]["C_grid"]
     n_folds = cfg["classifier"]["inner_cv_folds"]

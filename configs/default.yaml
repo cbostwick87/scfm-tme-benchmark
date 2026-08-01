@@ -166,3 +166,7 @@ statistics:
     resample_unit: dataset               # resample datasets, not cells
     ci_level: 0.95
   report_effect_size_always: true
+  # Pre-specified smallest delta-macroF1 considered scientifically meaningful.
+  # Set BEFORE any result exists. A contrast below this is reported as
+  # "detectable but negligible" however small its p-value -- guardrail 9.
+  negligible_delta: 0.02

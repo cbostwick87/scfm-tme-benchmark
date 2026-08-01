@@ -1,0 +1,67 @@
+[
+  {
+    "step": "embed_scgpt:BRCA_GSE161529",
+    "seconds": 310.924,
+    "timestamp_utc": "2026-08-01T15:17:14Z"
+  },
+  {
+    "step": "embed_scgpt:BRCA_GSE176078",
+    "seconds": 325.149,
+    "timestamp_utc": "2026-08-01T15:22:39Z"
+  },
+  {
+    "step": "embed_scgpt:CHOL_GSE125449_aPD1aPDL1aCTLA4",
+    "seconds": 47.271,
+    "timestamp_utc": "2026-08-01T15:23:27Z"
+  },
+  {
+    "step": "embed_scgpt:CRC_GSE108989",
+    "seconds": 133.677,
+    "timestamp_utc": "2026-08-01T15:25:40Z"
+  },
+  {
+    "step": "embed_scgpt:CRC_GSE146771_10X",
+    "seconds": 334.558,
+    "timestamp_utc": "2026-08-01T15:31:15Z"
+  },
+  {
+    "step": "embed_scgpt:HNSC_GSE103322",
+    "seconds": 75.084,
+    "timestamp_utc": "2026-08-01T15:32:30Z"
+  },
+  {
+    "step": "embed_scgpt:LIHC_GSE140228_10X",
+    "seconds": 340.666,
+    "timestamp_utc": "2026-08-01T15:38:11Z"
+  },
+  {
+    "step": "embed_scgpt:LIHC_GSE98638",
+    "seconds": 52.019,
+    "timestamp_utc": "2026-08-01T15:39:03Z"
+  },
+  {
+    "step": "embed_scgpt:NSCLC_GSE127465",
+    "seconds": 310.717,
+    "timestamp_utc": "2026-08-01T15:44:13Z"
+  },
+  {
+    "step": "embed_scgpt:NSCLC_GSE131907",
+    "seconds": 337.134,
+    "timestamp_utc": "2026-08-01T15:49:50Z"
+  },
+  {
+    "step": "embed_scgpt:PAAD_GSE111672",
+    "seconds": 25.859,
+    "timestamp_utc": "2026-08-01T15:50:16Z"
+  },
+  {
+    "step": "embed_scgpt:PAAD_GSE154778",
+    "seconds": 161.857,
+    "timestamp_utc": "2026-08-01T15:52:58Z"
+  },
+  {
+    "step": "embed_scgpt:STAD_GSE134520",
+    "seconds": 70.151,
+    "timestamp_utc": "2026-08-01T15:54:08Z"
+  }
+]

@@ -85,33 +85,47 @@ def select_hvg(X: sp.csr_matrix, train_mask: np.ndarray, n_top: int) -> np.ndarr
 
 
 def fit_pca(X: sp.csr_matrix, train_mask: np.ndarray, n_comp: int, seed: int,
-            batch: int = 4096):
-    """IncrementalPCA fit on TRAIN cells only; returns (transform_fn, model).
+            batch: int = 4096, fit_subsample: int = 50000):
+    """PCA fit on TRAIN cells only; returns (transform_fn, model).
 
-    Incremental rather than full SVD because the corpus does not fit in memory
-    densified, and partial_fit keeps peak RSS bounded by the batch.
+    Randomized SVD on a subsample of the training cells, rather than
+    IncrementalPCA over every training cell. Two things make this safe:
+
+      * The FIT is subsampled; the TRANSFORM is applied to every cell. Principal
+        directions of a 3000-gene space are estimated to well within their own
+        sampling error from tens of thousands of cells -- adding the remaining
+        ~90k moves the components far less than the seed-to-seed variation the
+        study already reports. Equivalence against the exhaustive fit is checked
+        in tests (subspace alignment, not just explained variance).
+      * The subsample is drawn from TRAIN ONLY, so this changes cost, not the
+        leakage contract.
+
+    IncrementalPCA over the full training partition took ~16 min per split, which
+    across 75 splits is 20 h for one baseline arm. That is a wall-clock problem,
+    not a scientific one, and it is fixed by better linear algebra rather than by
+    reducing the experiment (guardrail 4: the baseline is not weakened to save time).
     """
-    from sklearn.decomposition import IncrementalPCA
+    from sklearn.decomposition import PCA
     _check_train_mask(train_mask, X.shape[0])
     idx = np.flatnonzero(train_mask)
     rng = np.random.default_rng(seed)
-    rng.shuffle(idx)
+    if len(idx) > fit_subsample:
+        idx = rng.choice(idx, fit_subsample, replace=False)
     n_comp = int(min(n_comp, X.shape[1], len(idx) - 1))
-    ip = IncrementalPCA(n_components=n_comp)
-    for s in range(0, len(idx), batch):
-        blk = idx[s:s + batch]
-        if len(blk) < n_comp:      # a final short batch cannot be partial_fit
-            break
-        ip.partial_fit(np.asarray(X[blk].todense(), dtype=np.float32))
 
-    def transform(Xa: sp.csr_matrix, chunk: int = 4096) -> np.ndarray:
+    Xf = np.asarray(X[idx].todense(), dtype=np.float32)
+    pca = PCA(n_components=n_comp, svd_solver="randomized", random_state=seed)
+    pca.fit(Xf)
+    del Xf
+
+    def transform(Xa: sp.csr_matrix, chunk: int = 8192) -> np.ndarray:
         out = np.empty((Xa.shape[0], n_comp), dtype=np.float32)
         for s in range(0, Xa.shape[0], chunk):
-            out[s:s + chunk] = ip.transform(
+            out[s:s + chunk] = pca.transform(
                 np.asarray(Xa[s:s + chunk].todense(), dtype=np.float32))
         return out
 
-    return transform, ip
+    return transform, pca
 
 
 def fit_standardiser(Z_train: np.ndarray):

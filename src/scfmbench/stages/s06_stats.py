@@ -102,8 +102,10 @@ def main(argv: list[str] | None = None) -> int:
     res = pathlib.Path(cfg["data"]["results"])
     t2 = pd.read_csv(args.results or res / "T2_results_long.csv")
 
-    scfms = [r for r in cfg["representations"] if r in ("geneformer", "scgpt")]
-    classical = [r for r in cfg["representations"] if r not in ("geneformer", "scgpt")]
+    enabled = [k for k, v in cfg["embeddings"].items()
+               if isinstance(v, dict) and v.get("enabled")]
+    scfms = [r for r in enabled if r in ("geneformer", "scgpt")]
+    classical = [r for r in enabled if r not in ("geneformer", "scgpt")]
     metric = "macro_f1"
 
     rows = []
@@ -133,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         t3["significant_fdr_005"] = t3["p_fdr"] < 0.05
         # An effect can be significant and negligible. Flag it explicitly so a
         # reader never has to infer it from the delta column.
-        thr = float(cfg["analysis"].get("negligible_delta", 0.02))
+        thr = float(cfg["statistics"].get("negligible_delta", 0.02))
         t3["negligible_effect"] = t3["delta_mean"].abs() < thr
         t3["verdict"] = np.where(
             ~t3["significant_fdr_005"], "no detectable difference",

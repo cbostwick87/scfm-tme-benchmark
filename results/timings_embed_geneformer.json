@@ -1,12 +1,67 @@
 [
   {
+    "step": "embed_geneformer:BRCA_GSE161529",
+    "seconds": 746.702,
+    "timestamp_utc": "2026-08-01T13:29:07Z"
+  },
+  {
+    "step": "embed_geneformer:BRCA_GSE176078",
+    "seconds": 999.77,
+    "timestamp_utc": "2026-08-01T13:45:47Z"
+  },
+  {
+    "step": "embed_geneformer:CHOL_GSE125449_aPD1aPDL1aCTLA4",
+    "seconds": 98.411,
+    "timestamp_utc": "2026-08-01T13:47:25Z"
+  },
+  {
+    "step": "embed_geneformer:CRC_GSE108989",
+    "seconds": 818.928,
+    "timestamp_utc": "2026-08-01T14:01:04Z"
+  },
+  {
+    "step": "embed_geneformer:CRC_GSE146771_10X",
+    "seconds": 526.97,
+    "timestamp_utc": "2026-08-01T14:09:51Z"
+  },
+  {
     "step": "embed_geneformer:HNSC_GSE103322",
-    "seconds": 456.787,
-    "timestamp_utc": "2026-08-01T13:09:13Z"
+    "seconds": 0.088,
+    "timestamp_utc": "2026-08-01T14:09:51Z"
+  },
+  {
+    "step": "embed_geneformer:LIHC_GSE140228_10X",
+    "seconds": 650.355,
+    "timestamp_utc": "2026-08-01T14:20:42Z"
+  },
+  {
+    "step": "embed_geneformer:LIHC_GSE98638",
+    "seconds": 360.143,
+    "timestamp_utc": "2026-08-01T14:26:42Z"
+  },
+  {
+    "step": "embed_geneformer:NSCLC_GSE127465",
+    "seconds": 595.948,
+    "timestamp_utc": "2026-08-01T14:36:38Z"
+  },
+  {
+    "step": "embed_geneformer:NSCLC_GSE131907",
+    "seconds": 985.904,
+    "timestamp_utc": "2026-08-01T14:53:04Z"
   },
   {
     "step": "embed_geneformer:PAAD_GSE111672",
-    "seconds": 56.969,
-    "timestamp_utc": "2026-08-01T13:10:10Z"
+    "seconds": 0.069,
+    "timestamp_utc": "2026-08-01T14:53:04Z"
+  },
+  {
+    "step": "embed_geneformer:PAAD_GSE154778",
+    "seconds": 749.032,
+    "timestamp_utc": "2026-08-01T15:05:33Z"
+  },
+  {
+    "step": "embed_geneformer:STAD_GSE134520",
+    "seconds": 108.928,
+    "timestamp_utc": "2026-08-01T15:07:22Z"
   }
 ]
