@@ -120,6 +120,13 @@ classifier:
 
 metrics:
   primary: macro_f1
+  # Class set for the PRIMARY macro-F1: classes present in BOTH train and test for
+  # that contrast. Classes absent from training cannot be predicted by any
+  # representation, so including them adds an identical constant penalty to every
+  # arm and dilutes the contrast. The all-test-classes variant is computed too and
+  # reported as a secondary metric; both appear in T2/T3.
+  macro_f1_class_set: learnable          # {learnable, all_test_classes}
+  report_secondary_class_set: true
   secondary: [accuracy, balanced_accuracy, per_class_f1, per_class_precision, per_class_recall]
 
 statistics:

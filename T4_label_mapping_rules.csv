@@ -1,0 +1,67 @@
+label_raw,cl_term,working_class,action,reason
+B,CL:0000236,B,map,
+CD4T,CL:0000624,CD4_T,map,
+CD4Tconv,CL:0000624,CD4_T,map,
+CD8T,CL:0000625,CD8_T,map,
+CD8Tex,CL:0000625,CD8_T,map,
+DC,CL:0000451,DC,map,
+Endothelial,CL:0000115,Endothelial,map,
+Epithelial,CL:0000066,Epithelial,map,
+Fibroblast,CL:0000057,Fibroblast,map,
+Fibroblasts,CL:0000057,Fibroblast,map,
+Macrophage,CL:0000235,Mono_Macro,map,
+Malignant,CL:0001064,Malignant,map,
+Mast,CL:0000097,Mast,map,
+Mono/Macro,CL:0000576,Mono_Macro,map,
+Monocyte,CL:0000576,Mono_Macro,map,
+Myofibroblast,CL:0000186,Fibroblast,map,
+Myofibroblasts,CL:0000186,Fibroblast,map,
+NK,CL:0000623,NK,map,
+NKT,CL:0000814,NK,map,
+Neutrophil,CL:0000775,Neutrophil,map,
+Neutrophils,CL:0000775,Neutrophil,map,
+Plasma,CL:0000786,Plasma,map,
+PlasmaB,CL:0000786,Plasma,map,
+Tex,CL:0000625,CD8_T,map,
+Tfh,CL:0002038,CD4_T,map,
+Th1,CL:0000545,CD4_T,map,
+Th17,CL:0000899,CD4_T,map,
+Treg,CL:0000815,Treg,map,
+cDC1,CL:0000990,DC,map,
+cDC2,CL:0002399,DC,map,
+pDC,CL:0000784,DC,map,
+Acinar,,,drop,"tissue parenchyma, not part of the immune question"
+Astrocyte,,,drop,"non-TME resident cell type, not part of the immune question"
+Cycling,,,drop,proliferating compartment spans multiple identities
+Doublet,,,drop,technical artefact
+Doublets,,,drop,technical artefact
+Ductal,,,drop,"tissue parenchyma, not part of the immune question"
+Endocrine,,,drop,"tissue parenchyma, not part of the immune question"
+Enteric glia,,,drop,"tissue parenchyma, not part of the immune question"
+Erythrocytes,,,drop,not a nucleated immune population of interest
+Gland mucous,,,drop,"gastric gland epithelium -- tissue parenchyma, not part of the immune question"
+Hepatic progenitor,,,drop,"tissue parenchyma progenitor, not part of the immune question"
+Hepatocyte,,,drop,"tissue parenchyma, not part of the immune question"
+ILC,,,drop,"innate lymphoid cells: immune, but 202 cells in one dataset only -- too rare to form a class in a cross-dataset design, and not equivalent to NK. Dropped and counted rather than merged."
+Immune cells,,,drop,granularity too coarse -- spans multiple working classes
+Low quality,,,drop,technical artefact
+Lymphocyte,,,drop,"granularity too coarse -- spans T, B and NK"
+Myeloid,,,drop,"granularity too coarse -- spans monocyte/macrophage, DC, mast, neutrophil"
+Myocyte,,,drop,"muscle -- structural stroma, not part of the immune question"
+Oligodendrocyte,,,drop,"non-TME resident cell type, not part of the immune question"
+Other,,,drop,unspecified by the original authors
+Others,,,drop,unspecified by the original authors
+Pericytes,,,drop,"non-TME resident cell type, not part of the immune question"
+Pit mucous,,,drop,"gastric surface epithelium -- tissue parenchyma, not part of the immune question"
+Progenitor,,,drop,developmental state spans multiple identities
+Proliferating,,,drop,proliferating compartment spans multiple identities
+SMC,,,drop,"smooth muscle -- structural stroma, not part of the immune question"
+Secretory,,,drop,"tissue parenchyma, not part of the immune question"
+Stellate,,,drop,"tissue parenchyma, not part of the immune question"
+Stem,,,drop,developmental state spans multiple identities
+TNK,,,drop,granularity too coarse -- spans T and NK
+Tcell,,,drop,"granularity too coarse -- spans CD4, CD8 and Treg"
+Tproilf,,,drop,"proliferating compartment spans multiple identities (source-data misspelling of 'Tprolif'; mapped by an explicit rule, not by fuzzy matching)"
+Tprolif,,,drop,proliferating compartment spans multiple identities
+Unclassified,,,drop,unspecified by the original authors
+Unknown,,,drop,unspecified by the original authors
