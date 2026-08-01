@@ -33,7 +33,11 @@ data/
 raw/
 processed/
 embeddings/
-models/
+# Model WEIGHTS live on the data volume, never in git. Anchored to the repo root
+# so it cannot also swallow source code under src/scfmbench/models/ -- an
+# unanchored `models/` silently excluded the Geneformer encoder module and would
+# have made the repository non-reproducible while every push reported success.
+/models/
 checkpoints/
 hf_cache/
 torch_cache/
