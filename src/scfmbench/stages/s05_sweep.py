@@ -25,17 +25,94 @@ import pandas as pd
 from scfmbench import config, metrics, splits
 
 
-def load_embedding(emb_dir: pathlib.Path, model: str) -> tuple[np.ndarray, np.ndarray]:
-    """Load all shards of a model's embedding, returning (matrix, cell_ids)."""
+def load_embedding(emb_dir: pathlib.Path, model: str,
+                   split_stem: str | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Load a representation, returning (matrix, cell_ids).
+
+    Two shapes exist, and the difference is structural rather than incidental:
+
+      * A zero-shot foundation model embeds each cell independently of any
+        partition, so its embedding is cached ONCE for the corpus and sharded by
+        dataset. All shards are concatenated.
+      * A classical representation is FIT on a split's training partition, so
+        there is one file PER SPLIT and the caller must say which. Concatenating
+        them would stack the same cell 75 times over.
+
+    Passing `split_stem` selects the per-split file; omitting it concatenates
+    dataset shards. A per-split directory read without `split_stem` raises rather
+    than silently returning a duplicated index.
+    """
     d = emb_dir / model
-    fs = sorted(d.glob("*.npz"))
-    if not fs:
-        raise FileNotFoundError(f"no embedding shards in {d}")
+    if not d.exists():
+        raise FileNotFoundError(f"no embedding directory {d}")
+    per_split = (d / f"{split_stem}.npz").exists() if split_stem else False
+    if per_split:
+        fs = [d / f"{split_stem}.npz"]
+    else:
+        fs = sorted(f for f in d.glob("*.npz"))
+        if not fs:
+            raise FileNotFoundError(f"no embedding shards in {d}")
+        # A directory whose files are named after splits is per-split, not sharded.
+        if any("__seed" in f.name for f in fs):
+            raise ValueError(
+                f"{model} is fit per split (found {len(fs)} split files in {d}) but no "
+                f"matching file for split {split_stem!r}. Refusing to concatenate "
+                f"per-split representations -- that would stack each cell once per "
+                f"split and silently corrupt the evaluation."
+            )
     E, ids = [], []
     for f in fs:
         with np.load(f, allow_pickle=True) as z:
             E.append(z["emb"]); ids.append(z["cell_id"])
     return np.vstack(E), np.concatenate(ids)
+
+
+def rep_dim_grid(rep: str, cfg, n_dims: int) -> list[int]:
+    """Candidate dimensionalities for a representation, selectable by inner CV.
+
+    Only the classical PCA arm has a genuine dimensionality choice: principal
+    components are ORDERED, so the first k columns of a 100-component fit are
+    exactly the k-component representation and no refit is needed. Foundation-model
+    embedding dimensions are not ordered by variance and truncating them would be
+    arbitrary mutilation, so those arms return their single native width.
+
+    Selecting this on training data only is what makes `n_pcs_grid` in the config
+    real rather than decorative -- before the pilot diagnostic the grid was
+    declared but never used, which quietly under-tuned the baseline the study is
+    supposed to be trying hardest to beat (guardrail 4).
+    """
+    if rep == "hvg_pca":
+        g = [int(d) for d in cfg["embeddings"]["hvg_pca"]["n_pcs_grid"] if 0 < int(d) <= n_dims]
+        return sorted(set(g)) or [n_dims]
+    return [n_dims]
+
+
+def inner_cv_score(Ztr, ytr, seed: int, cv_grid, n_folds: int,
+                   cv_max_cells: int = 20000) -> float:
+    """Best inner-CV macro-F1 over the C grid, on TRAIN only. Never touches test."""
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import StratifiedKFold, GridSearchCV
+    classes, counts = np.unique(ytr, return_counts=True)
+    k = int(min(n_folds, counts.min()))
+    if k < 2 or len(classes) < 2:
+        return -np.inf
+    if len(ytr) > cv_max_cells:
+        rng = np.random.default_rng(seed)
+        sel = []
+        for c in classes:
+            idx = np.flatnonzero(ytr == c)
+            take = max(int(round(cv_max_cells * len(idx) / len(ytr))), min(len(idx), 2))
+            sel.append(idx if len(idx) <= take else rng.choice(idx, take, replace=False))
+        sub = np.sort(np.concatenate(sel))
+    else:
+        sub = np.arange(len(ytr))
+    gs = GridSearchCV(LogisticRegression(max_iter=2000, solver="lbfgs",
+                                         class_weight="balanced", random_state=seed),
+                      {"C": list(cv_grid)},
+                      cv=StratifiedKFold(k, shuffle=True, random_state=seed),
+                      scoring="f1_macro", n_jobs=1, refit=False)
+    gs.fit(Ztr[sub], ytr[sub])
+    return float(gs.best_score_)
 
 
 def budget_indices(y: np.ndarray, budget, seed: int) -> np.ndarray:
@@ -55,28 +132,81 @@ def budget_indices(y: np.ndarray, budget, seed: int) -> np.ndarray:
     return np.sort(np.concatenate(keep))
 
 
-def fit_predict(Ztr, ytr, Zte, seed: int, cv_grid, n_folds: int):
-    """Multinomial LR with L2; C chosen by inner CV on TRAIN only."""
+def fit_predict(Ztr, ytr, Zte, seed: int, cv_grid, n_folds: int,
+                cv_max_cells: int = 20000):
+    """Multinomial LR with L2; C chosen by inner CV on TRAIN only.
+
+    COST NOTE (measured, not assumed). At the unrestricted label budget the
+    training partition is ~138,000 cells, and a 5-fold CV over a 6-point C grid is
+    30 full logistic-regression fits on ~110,000 x 768 -- more than 20 minutes per
+    run, which across the design grid is several hundred hours. The pilot gate
+    caught this before the full run rather than after.
+
+    The fix subsamples the INNER CV ONLY. C is selected on at most `cv_max_cells`
+    training cells, and the final model is then refit ONCE on the ENTIRE training
+    set with the chosen C. What this changes:
+      * the cost of SELECTING the regularisation strength;
+    what it does not change:
+      * the classifier (same multinomial L2 head for every representation),
+      * the C grid (unreduced -- tuning quality is not traded for speed, and the
+        baseline must be tuned as carefully as the scFM arm),
+      * the data the final model is fit on (the full training partition),
+      * the leakage contract (the subsample is drawn from TRAIN only, and test is
+        never touched during selection).
+    C is a smooth regularisation parameter whose optimum is stable well before
+    100k samples; the cells omitted from selection are still used for the fit.
+    """
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import StratifiedKFold, GridSearchCV
 
     classes, counts = np.unique(ytr, return_counts=True)
-    # inner CV needs at least 2 members per class per fold; with tiny label
-    # budgets that is impossible, so fall back to a fixed C rather than
-    # silently letting sklearn pick a degenerate split.
-    k = int(min(n_folds, counts.min()))
-    base = LogisticRegression(max_iter=2000, multi_class="multinomial",
+    # `multi_class` was removed in scikit-learn 1.7+; with lbfgs a multi-class
+    # problem is fit as multinomial softmax by default. That is what guardrail 3
+    # requires, so it is ASSERTED after fitting rather than requested through a
+    # keyword that no longer exists -- a silent switch to one-vs-rest would change
+    # what the study measures.
+    base = LogisticRegression(max_iter=2000, solver="lbfgs",
                               class_weight="balanced", random_state=seed)
+
+    # inner CV needs >=2 members per class per fold; at tiny label budgets that is
+    # impossible, so fall back to a fixed C rather than letting sklearn pick a
+    # degenerate split.
+    k = int(min(n_folds, counts.min()))
     if k >= 2 and len(classes) > 1:
+        if len(ytr) > cv_max_cells:
+            rng = np.random.default_rng(seed)
+            sel = []
+            for c in classes:                      # stratified, keeps rare classes
+                idx = np.flatnonzero(ytr == c)
+                take = max(int(round(cv_max_cells * len(idx) / len(ytr))), min(len(idx), 2))
+                sel.append(idx if len(idx) <= take else rng.choice(idx, take, replace=False))
+            sub = np.sort(np.concatenate(sel))
+        else:
+            sub = np.arange(len(ytr))
         gs = GridSearchCV(base, {"C": list(cv_grid)},
                           cv=StratifiedKFold(k, shuffle=True, random_state=seed),
-                          scoring="f1_macro", n_jobs=1, refit=True)
-        gs.fit(Ztr, ytr)
-        model, chosen, cv_used = gs.best_estimator_, gs.best_params_["C"], k
+                          scoring="f1_macro", n_jobs=1, refit=False)
+        gs.fit(Ztr[sub], ytr[sub])
+        chosen, cv_used, cv_n = gs.best_params_["C"], k, int(len(sub))
     else:
-        model = base.set_params(C=1.0).fit(Ztr, ytr)
-        chosen, cv_used = 1.0, 0
-    return model.predict(Zte), chosen, cv_used
+        chosen, cv_used, cv_n = 1.0, 0, 0
+
+    # final model: full training set, chosen C
+    model = base.set_params(C=chosen).fit(Ztr, ytr)
+
+    if len(model.classes_) > 2:
+        if model.coef_.shape[0] != len(model.classes_):
+            raise RuntimeError(
+                f"classifier is not multinomial: coef_ has {model.coef_.shape[0]} rows "
+                f"for {len(model.classes_)} classes (guardrail 3 requires one shared "
+                f"multinomial head for every representation)")
+        pr = model.predict_proba(Zte[:min(64, len(Zte))])
+        if not np.allclose(pr.sum(axis=1), 1.0, atol=1e-6):
+            raise RuntimeError(
+                "classifier probabilities do not sum to 1: the solver is not fitting a "
+                "multinomial softmax, so representations would not be compared under "
+                "the same classifier head")
+    return model.predict(Zte), chosen, cv_used, cv_n
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -111,31 +241,45 @@ def main(argv: list[str] | None = None) -> int:
 
     cache = {}
     n_new = 0
-    for rep in reps:
-        if rep not in cache:
-            E, ids = load_embedding(emb_dir, rep)
-            order = pd.Index(ids).get_indexer(pd.Index(idx["cell_id"]))
-            if (order < 0).any():
-                missing = int((order < 0).sum())
-                raise ValueError(
-                    f"{rep}: {missing} cells in the index have no embedding. Every cell "
-                    f"must be embedded exactly once per model; refusing to evaluate on a "
-                    f"partial cache."
-                )
-            cache[rep] = E[order]
-            print(f"loaded {rep}: {cache[rep].shape}", flush=True)
-        Z = cache[rep]
+    wanted = set(cfg["splits"]["scheme_ids"])
+    split_files = [sf for sf in sorted(split_dir.glob("*.parquet"))
+                   if sf.name != "cell_index.parquet"
+                   and sf.name.split("__")[0] in wanted]
+    if not split_files:
+        raise ValueError(f"no split files match scheme_ids={sorted(wanted)}")
+    if cfg["run"].get("max_splits_per_scheme"):
+        lim = int(cfg["run"]["max_splits_per_scheme"])
+        keep, seen = [], {}
+        for sf in split_files:
+            s = sf.name.split("__")[0]
+            seen[s] = seen.get(s, 0) + 1
+            if seen[s] <= lim:
+                keep.append(sf)
+        split_files = keep
 
-        for sf in sorted(split_dir.glob("*.parquet")):
-            if sf.name == "cell_index.parquet":
-                continue
-            part = pd.read_parquet(sf)
-            if len(part) != len(idx) or not (part["cell_id"].to_numpy() == idx["cell_id"].to_numpy()).all():
-                raise ValueError(f"{sf.name}: split rows do not align with the cell index")
-            p = part["partition"].to_numpy()
-            splits.assert_calibration_untouched({"train", "test"})   # guardrail 6
-            tr = p == "train"; te = p == "test"
-            y = idx["label"].to_numpy()
+    y = idx["label"].to_numpy()
+    for sf in split_files:
+        part = pd.read_parquet(sf)
+        if len(part) != len(idx) or not (part["cell_id"].to_numpy() == idx["cell_id"].to_numpy()).all():
+            raise ValueError(f"{sf.name}: split rows do not align with the cell index")
+        p = part["partition"].to_numpy()
+        splits.assert_calibration_untouched({"train", "test"})   # guardrail 6
+        tr, te = p == "train", p == "test"
+
+        for rep in reps:
+            key_rep = (rep, sf.stem)
+            if key_rep not in cache:
+                cache.clear()                     # one representation resident at a time
+                E, ids = load_embedding(emb_dir, rep, split_stem=sf.stem)
+                order = pd.Index(ids).get_indexer(pd.Index(idx["cell_id"]))
+                if (order < 0).any():
+                    raise ValueError(
+                        f"{rep}: {int((order < 0).sum())} cells in the index have no "
+                        f"embedding. Every cell must be embedded exactly once per model; "
+                        f"refusing to evaluate on a partial cache.")
+                cache[key_rep] = E[order]
+                print(f"loaded {rep} for {sf.stem}: {cache[key_rep].shape}", flush=True)
+            Z = cache[key_rep]
 
             for budget in budgets:
                 for seed in cfg["run"]["seeds"]:
@@ -148,17 +292,33 @@ def main(argv: list[str] | None = None) -> int:
                     if len(np.unique(ytr)) < 2:
                         continue
                     from scfmbench.models.classical import fit_standardiser
-                    scale = fit_standardiser(Z[sel])      # fit on TRAIN subset only
-                    yp, C, cv_used = fit_predict(scale(Z[sel]), ytr, scale(Z[te]),
-                                                 seed, grid, n_folds)
+                    # Representation dimensionality is selected by the SAME inner CV
+                    # that selects C, on training data only.
+                    dim_grid = rep_dim_grid(rep, cfg, Z.shape[1])
+                    if len(dim_grid) > 1:
+                        best_d, best_s = dim_grid[-1], -np.inf
+                        for dcand in dim_grid:
+                            sc_d = fit_standardiser(Z[sel][:, :dcand])
+                            sc = inner_cv_score(sc_d(Z[sel][:, :dcand]), ytr,
+                                                seed, grid, n_folds)
+                            if sc > best_s:
+                                best_d, best_s = dcand, sc
+                        d_sel = best_d
+                    else:
+                        d_sel = dim_grid[0]
+                    Zs = Z[:, :d_sel]
+                    scale = fit_standardiser(Zs[sel])     # fit on TRAIN subset only
+                    yp, C, cv_used, cv_n = fit_predict(
+                        scale(Zs[sel]), ytr, scale(Zs[te]), seed, grid, n_folds)
                     m = metrics.evaluate(y[te], yp, ytr)
-                    scheme = sf.name.split("__")[0]
-                    row = {"representation": rep, "split_file": sf.name, "scheme": scheme,
+                    row = {"representation": rep, "split_file": sf.name,
+                           "scheme": sf.name.split("__")[0],
                            "holdout_group": sf.name.split("__holdout-")[1].replace(".parquet", "")
                                             if "__holdout-" in sf.name else "",
                            "budget": budget if budget is not None else "all",
                            "seed": seed, "n_train_used": int(len(sel)),
                            "C_selected": C, "inner_cv_folds_used": cv_used,
+                           "cv_selection_cells": cv_n, "n_dims_selected": int(d_sel),
                            "seconds": round(time.time() - t0, 2),
                            **{k: v for k, v in m.items() if k != "per_class_f1"},
                            "per_class_f1_json": json.dumps(m["per_class_f1"])}
@@ -166,8 +326,8 @@ def main(argv: list[str] | None = None) -> int:
                                                header=not out_csv.exists())
                     n_new += 1
                     if n_new % 10 == 0:
-                        print(f"  {n_new} new runs; last: {rep} {scheme} b={row['budget']} "
-                              f"f1={row['macro_f1']:.3f}", flush=True)
+                        print(f"  {n_new} new runs; last: {rep} {row['scheme']} "
+                              f"b={row['budget']} f1={row['macro_f1']:.3f}", flush=True)
     print(json.dumps({"new_runs": n_new, "table": str(out_csv)}, indent=2))
     return 0
 

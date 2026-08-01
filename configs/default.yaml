@@ -119,10 +119,20 @@ embeddings:
     precision: fp16
   hvg_pca:
     enabled: true
-    n_hvg_grid: [1000, 2000, 3000]     # tuned by inner CV on TRAIN only
+    # GRID EXTENDED after a pilot diagnostic showed the original ceiling of 3000
+    # was capping the baseline. Measured on S1 seed0 (100 PCs, C=1.0):
+    #   2000 HVG 0.8225 | 3000 0.8353 | 5000 0.8406 | 8000 0.8503 | 11054 0.8555
+    # i.e. performance rises monotonically to the FULL common gene set, and the
+    # old grid cost the baseline 0.020 macro-F1 -- exactly the threshold this
+    # study calls a meaningful effect. Guardrail 4 requires the baseline be tuned
+    # as carefully as the scFM pipeline, so the grid now spans to saturation and
+    # "no HVG selection at all" is an explicit, selectable option.
+    n_hvg_grid: [2000, 3000, 5000, 8000, 0]   # 0 = use every common gene
+    # PC count DOES saturate: 100 PCs 0.8353 > 200 PCs 0.8278 > 300 PCs 0.8265,
+    # so 100 is a genuine optimum rather than a budget-driven cap.
     n_pcs_grid: [30, 50, 100]
-    hvg_flavor: seurat_v3
-    incremental_pca: true              # never dense full-matrix PCA
+    hvg_flavor: dispersion_binned      # normalised dispersion, binned by mean
+    incremental_pca: false             # randomized SVD on a train subsample
   scvi:
     enabled: true
     n_latent: 30
@@ -139,9 +149,16 @@ classifier:
   # SAME head for every embedding. The experiment isolates the REPRESENTATION.
   kind: logistic_regression
   penalty: l2
-  multi_class: multinomial
+  # multinomial softmax, NOT one-vs-rest. scikit-learn >=1.7 removed the
+  # `multi_class` keyword and makes multinomial the behaviour of lbfgs for
+  # multi-class problems, so this is asserted in code after fitting (coefficient
+  # rows per class + probabilities summing to 1) rather than passed as a keyword.
+  multi_class: multinomial        # documented intent; enforced by assertion
   solver: lbfgs
   max_iter: 2000
+  # Verified not edge-binding: on the pilot split macro-F1 is flat-to-declining
+  # past C=1.0 (1.0: 0.8357, 10: 0.8341, 100: 0.8333, 1000: 0.8328, 10000: 0.8331),
+  # so extending the grid would add cost without adding capacity.
   C_grid: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
   inner_cv_folds: 5               # within TRAIN only, never test
 

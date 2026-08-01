@@ -9,6 +9,9 @@ inherit: configs/default.yaml
 run:
   name: pilot
   seeds: [0, 1]
+  # The brief specifies 2 datasets, 1 split, 2 budgets, 2 seeds. Without this the
+  # sweep would run all 5 seeds of the scheme and stop being a pilot.
+  max_splits_per_scheme: 1
 
 corpus:
   n_datasets: 2

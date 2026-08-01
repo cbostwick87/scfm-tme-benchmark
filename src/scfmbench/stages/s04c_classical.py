@@ -141,7 +141,9 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     raise NotImplementedError(method)
             np.savez_compressed(o, emb=Z.astype(np.float32),
-                                cell_id=idx["cell_id"].to_numpy())
+                                cell_id=idx["cell_id"].to_numpy(),
+                                n_hvg=np.array([len(hv)]),
+                                pc_grid=np.array(pc_grid))
             rows.append({"method": method, "split": f.stem, "n_hvg": int(len(hv)),
                          "n_components": int(Z.shape[1]),
                          "explained_variance": float(model.explained_variance_ratio_.sum()),
