@@ -19,6 +19,33 @@ data:
   results: results
   figures: figures
 
+# ============================================================
+# Foundation-model checkpoints. Identities are pinned: a benchmark that cannot
+# say WHICH checkpoint it measured is not reproducible, and this repo ships
+# four Geneformer variants' worth of ambiguity if left unstated.
+# ============================================================
+models:
+  hf_cache: ${SCFM_DATA_ROOT}/hf_cache
+  torch_cache: ${SCFM_DATA_ROOT}/torch_cache
+  geneformer:
+    repo: ctheodoris/Geneformer
+    # The GENERAL checkpoint. Geneformer-V2-104M_CLcancer is deliberately NOT used:
+    # cancer-tuned weights would violate the zero-shot requirement and would
+    # confound the pretraining-overlap audit, since its extra training data is
+    # cancer single-cell data of exactly the kind this benchmark evaluates.
+    checkpoint: Geneformer-V2-104M
+    snapshot_commit: 04c2b2e84da7c0f385c3f9ad8f3ec24bab6650e5
+    input_size: 4096            # V2 context; V1 was 2048
+    pooling: mean_over_real_tokens   # NOT the BERT pooler -- untrained in this ckpt
+    precision: fp16             # bf16 is emulated on Turing; never use it here
+  scgpt:
+    # Released human checkpoint: a raw directory (args.json, best_model.pt,
+    # vocab.json), NOT a HuggingFace hub repo.
+    checkpoint_dir: ${SCFM_DATA_ROOT}/models/scgpt-human
+    use_fast_transformer: false  # flash-attn is not expected to build on Turing
+    precision: fp16
+    time_box_minutes: 90        # documented fallback if it cannot be made to run
+
 corpus:
   # Selected by pre-specified criteria applied uniformly to all 28 screened TISCH2
   # entries (see results/dataset_screening.csv for the full screen, including

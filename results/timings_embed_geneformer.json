@@ -1,0 +1,12 @@
+[
+  {
+    "step": "embed_geneformer:HNSC_GSE103322",
+    "seconds": 456.787,
+    "timestamp_utc": "2026-08-01T13:09:13Z"
+  },
+  {
+    "step": "embed_geneformer:PAAD_GSE111672",
+    "seconds": 56.969,
+    "timestamp_utc": "2026-08-01T13:10:10Z"
+  }
+]
