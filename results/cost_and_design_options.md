@@ -79,11 +79,27 @@ aimed at the wrong 0.4%, which is why it produced no net speedup.
 - Inner-CV selection is already subsampled to <=20,000 cells; the remaining cost is
   the 30 fits at that size.
 
-**Implication for the decision below:** if the GPU inner CV holds up in the running
-sweep, the projected total falls from ~120 h toward the **35-45 h** range with **no
-design change at all**. The reduction options remain on the table but are no longer
-obviously necessary. The numbers in section 5 are computed against the 119.9 h
-baseline and should be re-derived once ~50 clean runs confirm the new per-run cost.
+**Confirmed in the running sweep.** Over 30 completed unrestricted-budget runs the
+per-run cost is **186 s** (recent mean) against 357 s with the GPU on the final
+refit alone and 309 s in the original CPU configuration. GPU utilisation is 40%,
+so the accelerator is now actually being used.
+
+| configuration | s/run at `all` | full-grid total |
+|---|---|---|
+| original (1 worker, 4 threads, all CPU) | 309 | ~104 h |
+| 3 CPU workers | 884 | ~99 h |
+| GPU final refit only | 357 | ~120 h |
+| **GPU inner CV + refit (current)** | **186** | **~71 h** |
+
+**The design does not need to be reduced.** ~71 h for the full grid, with every
+axis intact: 3 representations x 75 splits x 6 budgets x 5 seeds, the unreduced C
+grid, 5 inner folds, and every leakage control. The reduction options in section 5
+are retained for the record and remain available, but taking one now would buy a
+limitation for nothing.
+
+The section 5 figures are computed against the superseded 119.9 h baseline. Against
+the current 71 h, Option A would save ~26 h rather than ~67 h, for the same power
+cost.
 
 ## 3. The key measurement for the decision
 
@@ -162,14 +178,17 @@ delta=0.05**. These axes are not interchangeable.
 
 ### Recommendation
 
-**Updated after profiling: try Option 0 first.** The component profile (section 2)
-shows the cost is the inner CV, not the final refit, and moving the inner CV to the
-GPU is a measured 3.6x on 99.3% of the run with the same C selected. If that holds
-in the running sweep, the grid completes in roughly 35-45 h with the design fully
-intact -- and a design change made unnecessarily is a limitation acquired for
-nothing.
+**Option 0: no reduction.** The profile identified the inner CV as 99.3% of the
+cost, moving it to the GPU is a measured 3.6x with the same C selected, and the
+running sweep confirms 186 s/run against 357 s -- **~71 h for the full grid with
+the design entirely intact**. A post-hoc change to a pre-specified design is a real
+cost that belongs in the limitations section; taking one when the compute fits
+without it buys nothing.
 
-**If it does not hold, Option A.** It removes 56% of the remaining compute for at most 0.02 of power
+**Option A remains the fallback** if the per-run cost regresses on the S3 splits,
+which have larger training partitions (158,306 versus 137,881 cells) and are 65 of
+the 75 splits. That is the one place the projection could still move materially,
+and it is worth re-checking once S3 runs are landing. It removes 56% of the remaining compute for at most 0.02 of power
 (0.02 at delta=0.02, 0.01 at delta=0.03, 0.00 at delta=0.05), because
 it cuts replication precisely where replication is nearly inert. Option C is
 defensible on power alone but gives up the ability to report a within-condition
