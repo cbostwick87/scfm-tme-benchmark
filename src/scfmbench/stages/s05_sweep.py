@@ -136,6 +136,74 @@ def budget_indices(y: np.ndarray, budget, seed: int) -> np.ndarray:
 _GPU_STATE = {"checked": False, "ok": False}
 
 
+# Canonical T2 column order. EVERY append must use exactly this order.
+#
+# pandas `to_csv(mode="a")` writes a DataFrame's own column order and does NOT
+# reconcile it against the existing header. So if the header was written with one
+# ordering and a later append has another -- which happens the moment a column is
+# added mid-run -- values land under the WRONG column names, silently. This was
+# observed in practice: `budget` came to contain "S1_within_dataset" (the scheme),
+# with no error anywhere. A results table that parses cleanly but has scrambled
+# columns is worse than one that fails to parse.
+T2_COLUMNS = [
+    "representation", "split_file", "scheme", "holdout_group", "budget", "seed",
+    "dataset", "n_datasets_in_run",
+    "n_train_used", "C_selected", "inner_cv_folds_used", "cv_selection_cells",
+    "n_dims_selected", "seconds",
+    "pooled_macro_f1", "pooled_macro_f1_all_test_classes",
+    "n_test", "n_classes_learnable", "n_classes_test_only",
+    "macro_f1", "macro_f1_all_test_classes", "accuracy",
+]
+
+
+def _append_rows(rows_out, out_csv) -> None:
+    """Append run rows under a fixed column order, or refuse.
+
+    Refusing on an unexpected column set is deliberate: a mismatch means the code
+    and the table have diverged, and appending anyway is how column-misaligned
+    rows enter a file that still parses.
+    """
+    df = pd.DataFrame(rows_out)
+    missing = set(T2_COLUMNS) - set(df.columns)
+    extra = set(df.columns) - set(T2_COLUMNS)
+    if missing or extra:
+        raise RuntimeError(
+            f"run row schema does not match T2_COLUMNS (missing={sorted(missing)}, "
+            f"unexpected={sorted(extra)}). Refusing to append: pandas would write "
+            f"these under the existing header's column names and silently misalign "
+            f"the table.")
+    df = df[T2_COLUMNS]
+    if out_csv.exists():
+        hdr = pd.read_csv(out_csv, nrows=0).columns.tolist()
+        if hdr != T2_COLUMNS:
+            raise RuntimeError(
+                f"existing {out_csv.name} has a different column order than the code "
+                f"writes. Appending would misalign every subsequent row. Retire or "
+                f"migrate the old file rather than appending to it.")
+    df.to_csv(out_csv, mode="a", index=False, header=not out_csv.exists())
+
+
+def _runkey(rep, split_name, budget, seed) -> tuple:
+    """Canonical run key, normalised so a round-trip through CSV cannot change it.
+
+    Seeds and budgets are written as integers but pandas infers a float column the
+    moment any row is missing, so "0" on the way out came back as "0.0" and every
+    resume key silently failed to match -- 350 completed runs were being recomputed
+    while the log reported them complete. Normalising both ends through this one
+    function is the fix; comparing ad-hoc str() casts on either side is what broke.
+    """
+    def norm(v):
+        s = str(v).strip()
+        if s in ("", "nan", "None"):
+            return "all"
+        try:
+            f = float(s)
+            return str(int(f)) if f.is_integer() else s
+        except ValueError:
+            return s
+    return (str(rep), str(split_name), norm(budget), norm(seed))
+
+
 def _gpu_ok() -> bool:
     """Gate GPU use on a one-time equivalence check against scikit-learn.
 
@@ -308,7 +376,7 @@ def main(argv: list[str] | None = None) -> int:
             # them as suspect rather than assume they are complete.
             ok = counts.iloc[0:0]
             partial = counts.index.tolist()
-        done = {tuple(str(x) for x in k) for k in ok.index}
+        done = {_runkey(*k) for k in ok.index}
         print(f"resuming: {len(done)} complete runs across {len(prev_files)} file(s)",
               flush=True)
         if partial:
@@ -354,6 +422,17 @@ def main(argv: list[str] | None = None) -> int:
         tr, te = p == "train", p == "test"
 
         for rep in reps:
+            # Check whether ANY cell of this (representation, split) still needs
+            # computing BEFORE loading the embedding. Loading is ~30-60 s for a
+            # 229,801-row matrix, and on a resumed run the loop would otherwise pay
+            # that cost for every split whose runs are already complete -- 45 min of
+            # pure I/O with nothing recorded, which reads exactly like a stall.
+            wanted = [(b, s) for b in budgets for s in cfg["run"]["seeds"]
+                      if _runkey(rep, sf.name, b, s) not in done]
+            if not wanted:
+                print(f"[skip] {rep} {sf.stem}: all runs already complete", flush=True)
+                continue
+
             key_rep = (rep, sf.stem)
             if key_rep not in cache:
                 cache.clear()                     # one representation resident at a time
@@ -370,7 +449,10 @@ def main(argv: list[str] | None = None) -> int:
 
             for budget in budgets:
                 for seed in cfg["run"]["seeds"]:
-                    key = (rep, sf.name, str(budget), str(seed))
+                    # _runkey, never an ad-hoc str() cast: `budget=None` must
+                    # render as "all" and a float-inferred seed as an integer, or
+                    # the key silently misses and the run is recomputed.
+                    key = _runkey(rep, sf.name, budget, seed)
                     if key in done:
                         continue
                     t0 = time.time()
@@ -434,8 +516,7 @@ def main(argv: list[str] | None = None) -> int:
                             f"no dataset produced a scoreable result for {rep} "
                             f"{sf.name} budget={budget} seed={seed}; refusing to "
                             f"record a run with no replication unit")
-                    pd.DataFrame(rows_out).to_csv(out_csv, mode="a", index=False,
-                                                  header=not out_csv.exists())
+                    _append_rows(rows_out, out_csv)
                     n_new += 1
                     if n_new % 10 == 0:
                         print(f"  {n_new} runs; last: {rep} {base['scheme']} "
