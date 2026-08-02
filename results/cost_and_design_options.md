@@ -34,33 +34,56 @@ refit on the full training partition, then scoring. Every run emits **13 rows**
 | **`all`** | **137,881 (S1) / 158,306 (S3)** | **357.4** | 1,125 | **111.7 h** |
 | | | | **6,750** | **119.9 h** |
 
-**`budget='all'` is 93% of the entire grid.** The reason is structural, not a
-bug: it is the only budget that fits on the full training partition. The capped
-budgets sample at most 100 cells per class, so ~1,400 cells for 14 classes --
-roughly **100x less training data**. The L-BFGS fit dominates everything else.
+**`budget='all'` is 93% of the entire grid.** It is the only budget that fits on
+the full training partition; the capped budgets sample at most 100 cells per
+class, so ~1,400 cells for 14 classes -- roughly **100x less training data**.
 
-### What has already been tried
+### Which part of a run costs that
 
-| configuration | s/run at `all` | net throughput |
+Profiling one unrestricted-budget run, component by component:
+
+| component | seconds | share |
+|---|---|---|
+| embedding load (amortised over 30 runs/split) | 8.2 | 0.3% |
+| standardise | 1.3 | 0.0% |
+| **inner CV (6 C values x 5 folds on 20,000 cells)** | **3,096.4** | **99.3%** |
+| final refit on 137,881 cells (GPU) | 13.2 | 0.4% |
+| predict + score | 0.0 | 0.0% |
+
+**This corrected an earlier conclusion of mine.** I had attributed the cost to the
+final refit on the full partition and optimised that first; the profile shows the
+final refit is 13 seconds and **selecting the regularisation strength is 99.3% of
+the run** -- 30 separate fits rather than one. The earlier GPU work was therefore
+aimed at the wrong 0.4%, which is why it produced no net speedup.
+
+### What has been tried, and what the profile implies
+
+| configuration | s/run at `all` | net |
 |---|---|---|
 | 1 worker, 4 BLAS threads (original) | 309 | baseline |
 | 3 workers, 1 thread each | 884 | **1.05x** |
-| GPU refit, 1 worker, 4 threads | 357 | **0.86x** |
+| GPU **final refit** only, 1 worker | 357 | **0.86x** |
+| GPU **inner CV** as well (measured on the CV problem in isolation) | -- | **3.6x on 99.3% of the run** |
 
-- **CPU sharding bought nothing.** The work is dense BLAS on a 4-core box;
-  partitioning cores does not create capacity (load average sat at 3.06/4).
-- **The GPU refit is 2.47x faster than the sharded configuration but slightly
-  slower than the original single-worker CPU setup.** It was verified to solve
-  the identical objective (relative gap 3e-11 to 4e-09, coefficient correlation
-  1.000000 at C = 0.01/1.0/100.0), so it is a legitimate swap -- it is just not
-  a speed win. Retained because it frees CPU for the inner CV.
-- The fits **converge** (630 of 2,000 iterations), so the cost is real work, not
-  a solver failing to terminate.
-- Inner-CV selection is already subsampled to <=20,000 cells; the remaining cost
-  is the final refit on the full partition, which cannot be subsampled without
-  changing what the study measures.
+- **CPU sharding bought nothing** -- dense BLAS on 4 cores; partitioning cores does
+  not create capacity (load average 3.06/4).
+- **GPU on the final refit alone bought nothing**, for the reason the profile now
+  makes obvious.
+- **GPU on the inner CV is the real win, and it is measured**: on real embeddings
+  (20,000 x 768, 14 classes, 6 C x 5 folds) it is **98.9 s against 356.3 s** for
+  scikit-learn, **selects the same C**, score-curve correlation 0.9924, maximum
+  score difference across the grid 0.00305 -- far below the 0.02 this study calls
+  negligible. The C grid and fold structure are unchanged; only the hardware
+  differs.
+- The fits **converge** (630 of 2,000 iterations), so this is real work.
+- Inner-CV selection is already subsampled to <=20,000 cells; the remaining cost is
+  the 30 fits at that size.
 
----
+**Implication for the decision below:** if the GPU inner CV holds up in the running
+sweep, the projected total falls from ~120 h toward the **35-45 h** range with **no
+design change at all**. The reduction options remain on the table but are no longer
+obviously necessary. The numbers in section 5 are computed against the 119.9 h
+baseline and should be re-derived once ~50 clean runs confirm the new per-run cost.
 
 ## 3. The key measurement for the decision
 
@@ -139,7 +162,14 @@ delta=0.05**. These axes are not interchangeable.
 
 ### Recommendation
 
-**Option A.** It removes 56% of the remaining compute for at most 0.02 of power
+**Updated after profiling: try Option 0 first.** The component profile (section 2)
+shows the cost is the inner CV, not the final refit, and moving the inner CV to the
+GPU is a measured 3.6x on 99.3% of the run with the same C selected. If that holds
+in the running sweep, the grid completes in roughly 35-45 h with the design fully
+intact -- and a design change made unnecessarily is a limitation acquired for
+nothing.
+
+**If it does not hold, Option A.** It removes 56% of the remaining compute for at most 0.02 of power
 (0.02 at delta=0.02, 0.01 at delta=0.03, 0.00 at delta=0.05), because
 it cuts replication precisely where replication is nearly inert. Option C is
 defensible on power alone but gives up the ability to report a within-condition

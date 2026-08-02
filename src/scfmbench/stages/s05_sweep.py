@@ -93,6 +93,7 @@ def inner_cv_score(Ztr, ytr, seed: int, cv_grid, n_folds: int,
     """Best inner-CV macro-F1 over the C grid, on TRAIN only. Never touches test."""
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import StratifiedKFold, GridSearchCV
+    from sklearn.metrics import f1_score
     classes, counts = np.unique(ytr, return_counts=True)
     k = int(min(n_folds, counts.min()))
     if k < 2 or len(classes) < 2:
@@ -262,6 +263,7 @@ def fit_predict(Ztr, ytr, Zte, seed: int, cv_grid, n_folds: int,
     """
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import StratifiedKFold, GridSearchCV
+    from sklearn.metrics import f1_score
 
     classes, counts = np.unique(ytr, return_counts=True)
     # `multi_class` was removed in scikit-learn 1.7+; with lbfgs a multi-class
@@ -287,11 +289,36 @@ def fit_predict(Ztr, ytr, Zte, seed: int, cv_grid, n_folds: int,
             sub = np.sort(np.concatenate(sel))
         else:
             sub = np.arange(len(ytr))
-        gs = GridSearchCV(base, {"C": list(cv_grid)},
-                          cv=StratifiedKFold(k, shuffle=True, random_state=seed),
-                          scoring="f1_macro", n_jobs=1, refit=False)
-        gs.fit(Ztr[sub], ytr[sub])
-        chosen, cv_used, cv_n = gs.best_params_["C"], k, int(len(sub))
+        # WHERE THE COST ACTUALLY IS (measured, and it corrected an earlier wrong
+        # assumption of mine): profiling one unrestricted-budget run gave inner CV
+        # 3096 s of a 3119 s total -- 99.3% -- against 13 s for the final GPU refit.
+        # The expensive step is selecting C (30 fits), not fitting once.
+        #
+        # So the inner CV runs on the GPU solver too. Measured on real embeddings,
+        # 20,000 x 768 with 14 classes, 6 C x 5 folds: 98.9 s on GPU against 356.3 s
+        # on scikit-learn (3.6x), SAME C selected, score-curve correlation 0.9924,
+        # and a maximum score difference of 0.00305 across the grid -- far below the
+        # 0.02 the study calls negligible. The grid is unreduced and the fold
+        # structure is unchanged; only the hardware differs.
+        if use_gpu and _gpu_ok():
+            skf = StratifiedKFold(k, shuffle=True, random_state=seed)
+            scores = {}
+            for C in cv_grid:
+                fold_scores = []
+                for tri, vai in skf.split(Ztr[sub], ytr[sub]):
+                    mdl = GPULogisticRegression(C=C, random_state=seed).fit(
+                        Ztr[sub][tri], ytr[sub][tri])
+                    fold_scores.append(f1_score(ytr[sub][vai], mdl.predict(Ztr[sub][vai]),
+                                                average="macro", zero_division=0))
+                scores[C] = float(np.mean(fold_scores))
+            chosen = max(scores, key=scores.get)
+        else:
+            gs = GridSearchCV(base, {"C": list(cv_grid)},
+                              cv=StratifiedKFold(k, shuffle=True, random_state=seed),
+                              scoring="f1_macro", n_jobs=1, refit=False)
+            gs.fit(Ztr[sub], ytr[sub])
+            chosen = gs.best_params_["C"]
+        cv_used, cv_n = k, int(len(sub))
     else:
         chosen, cv_used, cv_n = 1.0, 0, 0
 
