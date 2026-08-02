@@ -117,9 +117,10 @@ reported as a finding.
 | 0.03 | 0.13 | 0.21 | 0.28 | 0.38 |
 | 0.05 | 0.29 | 0.48 | 0.62 | 0.79 |
 
-Cutting seeds at `all` from 5 to 2 costs **0.01 of power** at every effect size
-tested. Cutting them at budget=5 would cost 0.26 at delta=0.05. These axes are
-not interchangeable.
+Cutting seeds at `all` from 5 to 2 costs, read directly off the tables above,
+**0.02 of power at delta=0.02, 0.01 at delta=0.03 and 0.00 at delta=0.05**. The
+same cut at budget=5 costs **0.08 at delta=0.02, 0.17 at delta=0.03 and 0.31 at
+delta=0.05**. These axes are not interchangeable.
 
 ---
 
@@ -138,7 +139,8 @@ not interchangeable.
 
 ### Recommendation
 
-**Option A.** It removes 56% of the remaining compute for 0.01 of power, because
+**Option A.** It removes 56% of the remaining compute for at most 0.02 of power
+(0.02 at delta=0.02, 0.01 at delta=0.03, 0.00 at delta=0.05), because
 it cuts replication precisely where replication is nearly inert. Option C is
 defensible on power alone but gives up the ability to report a within-condition
 seed SD at the unrestricted budget, which is worth keeping as evidence that the
