@@ -214,6 +214,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--representations", nargs="*", default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--shard", default=None,
+                    help="K/N: this worker takes splits K, K+N, K+2N ... of the "
+                         "configured split list. Sharding is BY SPLIT so each worker "
+                         "holds one representation at a time and keeps the "
+                         "single-worker memory profile.")
     args = ap.parse_args(argv)
     cfg = config.load(args.config)
 
@@ -232,12 +237,32 @@ def main(argv: list[str] | None = None) -> int:
     grid = cfg["classifier"]["C_grid"]
     n_folds = cfg["classifier"]["inner_cv_folds"]
 
-    done = set()
-    if out_csv.exists():
-        prev = pd.read_csv(out_csv)
-        done = set(map(tuple, prev[["representation", "split_file", "budget", "seed"]]
-                       .astype(str).to_numpy()))
-        print(f"resuming: {len(done)} runs already recorded", flush=True)
+    # Resume reads EVERY shard, so parallel workers see each other's completed
+    # runs and a re-run with different sharding never repeats work.
+    shard_glob = sorted(out_csv.parent.glob(out_csv.name.replace(".csv", ".shard*.csv")))
+    prev_files = ([out_csv] if out_csv.exists() else []) + shard_glob
+    done, partial = set(), []
+    if prev_files:
+        prev = pd.concat([pd.read_csv(f) for f in prev_files], ignore_index=True)
+        keycols = ["representation", "split_file", "budget", "seed"]
+        counts = prev.groupby(keycols).size()
+        if "n_datasets_in_run" in prev.columns:
+            expected = prev.groupby(keycols)["n_datasets_in_run"].max()
+            ok = counts[counts >= expected.reindex(counts.index)]
+            partial = counts[counts < expected.reindex(counts.index)].index.tolist()
+        else:
+            # rows written before this column existed cannot be verified; treat
+            # them as suspect rather than assume they are complete.
+            ok = counts.iloc[0:0]
+            partial = counts.index.tolist()
+        done = {tuple(str(x) for x in k) for k in ok.index}
+        print(f"resuming: {len(done)} complete runs across {len(prev_files)} file(s)",
+              flush=True)
+        if partial:
+            print(f"  {len(partial)} INCOMPLETE runs will be recomputed "
+                  f"(partial write or pre-versioning rows); their stale rows are "
+                  f"dropped at merge time by keeping the last complete write",
+                  flush=True)
 
     cache = {}
     n_new = 0
@@ -256,6 +281,14 @@ def main(argv: list[str] | None = None) -> int:
             if seen[s] <= lim:
                 keep.append(sf)
         split_files = keep
+
+    if args.shard:
+        k, n = (int(x) for x in args.shard.split("/"))
+        if not (0 <= k < n):
+            raise ValueError(f"--shard K/N requires 0 <= K < N, got {args.shard}")
+        split_files = split_files[k::n]
+        out_csv = out_csv.with_name(out_csv.name.replace(".csv", f".shard{k}.csv"))
+        print(f"shard {k}/{n}: {len(split_files)} splits -> {out_csv.name}", flush=True)
 
     y = idx["label"].to_numpy()
     ds_all = idx["dataset"].to_numpy()      # replication unit for guardrail 5
@@ -334,7 +367,15 @@ def main(argv: list[str] | None = None) -> int:
                             "pooled_macro_f1": m_pool["macro_f1"],
                             "pooled_macro_f1_all_test_classes":
                                 m_pool["macro_f1_all_test_classes"]}
-                    rows_out = [{**base, "dataset": dsn, **vals} for dsn, vals in per_ds.items()]
+                    # Each row records how many rows its run OUGHT to have. A run
+                    # writes all its dataset rows in one append; if the process dies
+                    # mid-write the run key would still be present and resume would
+                    # skip it, leaving that run permanently contributing a partial
+                    # dataset panel. Recording the expected count makes an incomplete
+                    # run detectable instead of silently wrong.
+                    n_exp = len(per_ds)
+                    rows_out = [{**base, "dataset": dsn, "n_datasets_in_run": n_exp, **vals}
+                                for dsn, vals in per_ds.items()]
                     if not rows_out:
                         raise RuntimeError(
                             f"no dataset produced a scoreable result for {rep} "
