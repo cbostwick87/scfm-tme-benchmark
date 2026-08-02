@@ -38,7 +38,7 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
     assumptions would be doing unearned work. The t-test is reported alongside
     for transparency, not as the decision rule.
     """
-    piv = df.pivot_table(index="dataset_unit", columns="representation",
+    piv = df.pivot_table(index="dataset", columns="representation",
                          values=metric, aggfunc="mean")
     if a not in piv.columns or b not in piv.columns:
         return {"error": f"missing representation {a!r} or {b!r}"}
@@ -74,17 +74,29 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
 
 
 def aggregate_seeds(t2: pd.DataFrame, metric: str) -> pd.DataFrame:
-    """Collapse seeds to one value per (dataset unit, representation, condition).
+    """Collapse seeds to one value per (dataset, representation, condition).
 
-    The "dataset unit" is the S3 holdout group where one exists, otherwise the
-    split file: under S1/S2 a split spans all datasets, so the replication unit
-    is the split instance; under S3 it is the held-out study.
+    THE UNIT OF REPLICATION IS THE DATASET (guardrail 5), and it is read from an
+    explicit `dataset` column produced by per-dataset scoring in the sweep.
+
+    There is deliberately NO fallback. An earlier version fell back to the split
+    file when no dataset column existed, which under S1/S2 -- where one split
+    spans every dataset -- silently made the SPLIT SEED the replication unit, so
+    the paired test would have run across 5 resamplings of the same corpus
+    presented as 5 independent units. That is the error guardrail 5 exists to
+    prevent, and a fallback that produces a plausible number is worse than a
+    hard failure, because nothing downstream can tell the difference.
     """
-    t2 = t2.copy()
-    t2["dataset_unit"] = np.where(t2["holdout_group"].astype(str).str.len() > 0,
-                                  t2["holdout_group"].astype(str),
-                                  t2["split_file"].astype(str))
-    keys = ["dataset_unit", "representation", "scheme", "budget"]
+    if "dataset" not in t2.columns:
+        raise ValueError(
+            "T2 has no `dataset` column, so the unit of replication cannot be the "
+            "dataset. Re-run the sweep: it must score each run per dataset "
+            "(metrics.evaluate_per_dataset). Refusing to substitute the split file, "
+            "which would test across split seeds and inflate the apparent "
+            "independence of the sample.")
+    if t2["dataset"].isna().any():
+        raise ValueError("T2 contains rows with a null dataset; refusing to aggregate.")
+    keys = ["dataset", "representation", "scheme", "budget"]
     agg = (t2.groupby(keys, dropna=False)[metric]
              .agg(["mean", "std", "count"]).reset_index()
              .rename(columns={"mean": metric, "std": f"{metric}_seed_sd",

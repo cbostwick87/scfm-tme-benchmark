@@ -62,3 +62,48 @@ def rarity_strata(train_labels: np.ndarray, edges=(0.01, 0.05)) -> dict:
     for c, f in zip(cls, frac):
         out[c] = "rare" if f < edges[0] else ("uncommon" if f < edges[1] else "common")
     return out
+
+def evaluate_per_dataset(y_true, y_pred, y_train, datasets):
+    """Score each dataset separately within one run.
+
+    THIS IS WHAT MAKES THE DATASET THE UNIT OF REPLICATION (guardrail 5).
+
+    Under S1 and S2 a single split spans every dataset, so a run produces one
+    pooled macro-F1 and the only thing left to aggregate over is the split seed.
+    Testing across split seeds would present 5 resamplings of the same corpus as
+    5 replication units -- the same error the guardrail forbids, in a subtler
+    form than counting seeds x datasets as one big n. Scoring per dataset gives
+    the paired test 13 genuine units under every scheme.
+
+    Learnable classes are resolved PER DATASET: a class present in training but
+    absent from dataset X's test cells is not scoreable there, and counting it
+    against X would measure that dataset's composition rather than the
+    representation. This is the pre-specified primary metric applied at the unit
+    of analysis rather than to the pooled pool.
+
+    The classifier fit is untouched -- only the scoring of already-made
+    predictions is partitioned -- so this costs essentially nothing.
+    """
+    y_true = np.asarray(y_true); y_pred = np.asarray(y_pred)
+    datasets = np.asarray(datasets)
+    train_classes = set(np.unique(y_train).tolist())
+    out = {}
+    for ds in np.unique(datasets):
+        m = datasets == ds
+        yt, yp = y_true[m], y_pred[m]
+        test_classes = set(np.unique(yt).tolist())
+        learnable = sorted(train_classes & test_classes)
+        if not learnable:
+            continue
+        out[str(ds)] = {
+            "n_test": int(m.sum()),
+            "n_classes_learnable": len(learnable),
+            "n_classes_test_only": len(test_classes - train_classes),
+            "macro_f1": float(f1_score(yt, yp, labels=learnable,
+                                       average="macro", zero_division=0)),
+            "macro_f1_all_test_classes": float(
+                f1_score(yt, yp, labels=sorted(test_classes),
+                         average="macro", zero_division=0)),
+            "accuracy": float((yt == yp).mean()),
+        }
+    return out

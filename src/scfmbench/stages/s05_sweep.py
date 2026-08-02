@@ -258,6 +258,7 @@ def main(argv: list[str] | None = None) -> int:
         split_files = keep
 
     y = idx["label"].to_numpy()
+    ds_all = idx["dataset"].to_numpy()      # replication unit for guardrail 5
     for sf in split_files:
         part = pd.read_parquet(sf)
         if len(part) != len(idx) or not (part["cell_id"].to_numpy() == idx["cell_id"].to_numpy()).all():
@@ -310,24 +311,42 @@ def main(argv: list[str] | None = None) -> int:
                     scale = fit_standardiser(Zs[sel])     # fit on TRAIN subset only
                     yp, C, cv_used, cv_n = fit_predict(
                         scale(Zs[sel]), ytr, scale(Zs[te]), seed, grid, n_folds)
-                    m = metrics.evaluate(y[te], yp, ytr)
-                    row = {"representation": rep, "split_file": sf.name,
-                           "scheme": sf.name.split("__")[0],
-                           "holdout_group": sf.name.split("__holdout-")[1].replace(".parquet", "")
-                                            if "__holdout-" in sf.name else "",
-                           "budget": budget if budget is not None else "all",
-                           "seed": seed, "n_train_used": int(len(sel)),
-                           "C_selected": C, "inner_cv_folds_used": cv_used,
-                           "cv_selection_cells": cv_n, "n_dims_selected": int(d_sel),
-                           "seconds": round(time.time() - t0, 2),
-                           **{k: v for k, v in m.items() if k != "per_class_f1"},
-                           "per_class_f1_json": json.dumps(m["per_class_f1"])}
-                    pd.DataFrame([row]).to_csv(out_csv, mode="a", index=False,
-                                               header=not out_csv.exists())
+                    # ONE ROW PER DATASET, not per run. Under S1/S2 a split spans
+                    # every dataset, so a pooled score would leave the split seed
+                    # as the only thing to aggregate over -- and testing across
+                    # split seeds presents 5 resamplings of one corpus as 5
+                    # replication units, which is exactly what guardrail 5
+                    # forbids. Scoring per dataset gives the paired test 13 real
+                    # units under every scheme. The classifier fit is unchanged;
+                    # only the scoring of existing predictions is partitioned.
+                    m_pool = metrics.evaluate(y[te], yp, ytr)
+                    per_ds = metrics.evaluate_per_dataset(y[te], yp, ytr, ds_all[te])
+                    secs = round(time.time() - t0, 2)
+                    base = {"representation": rep, "split_file": sf.name,
+                            "scheme": sf.name.split("__")[0],
+                            "holdout_group": sf.name.split("__holdout-")[1].replace(".parquet", "")
+                                             if "__holdout-" in sf.name else "",
+                            "budget": budget if budget is not None else "all",
+                            "seed": seed, "n_train_used": int(len(sel)),
+                            "C_selected": C, "inner_cv_folds_used": cv_used,
+                            "cv_selection_cells": cv_n, "n_dims_selected": int(d_sel),
+                            "seconds": secs,
+                            "pooled_macro_f1": m_pool["macro_f1"],
+                            "pooled_macro_f1_all_test_classes":
+                                m_pool["macro_f1_all_test_classes"]}
+                    rows_out = [{**base, "dataset": dsn, **vals} for dsn, vals in per_ds.items()]
+                    if not rows_out:
+                        raise RuntimeError(
+                            f"no dataset produced a scoreable result for {rep} "
+                            f"{sf.name} budget={budget} seed={seed}; refusing to "
+                            f"record a run with no replication unit")
+                    pd.DataFrame(rows_out).to_csv(out_csv, mode="a", index=False,
+                                                  header=not out_csv.exists())
                     n_new += 1
                     if n_new % 10 == 0:
-                        print(f"  {n_new} new runs; last: {rep} {row['scheme']} "
-                              f"b={row['budget']} f1={row['macro_f1']:.3f}", flush=True)
+                        print(f"  {n_new} runs; last: {rep} {base['scheme']} "
+                              f"b={base['budget']} pooled_f1={base['pooled_macro_f1']:.3f} "
+                              f"({len(rows_out)} datasets)", flush=True)
     print(json.dumps({"new_runs": n_new, "table": str(out_csv)}, indent=2))
     return 0
 
