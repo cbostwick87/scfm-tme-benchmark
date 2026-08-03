@@ -28,7 +28,7 @@ import pandas as pd
 import scipy.sparse as sp
 
 from scfmbench import config, provenance
-from scfmbench.models import classical
+from scfmbench.models import classical, deep_classical
 
 
 def load_corpus(cfg) -> tuple[sp.csr_matrix, pd.DataFrame, np.ndarray]:
@@ -104,7 +104,9 @@ def main(argv: list[str] | None = None) -> int:
           f"{X.nnz/1e6:.1f}M nonzeros", flush=True)
 
     Xn = classical.normalise_log1p(X)
-    del X
+    # scVI needs the ORIGINAL matrix (TISCH2 log1p(CP10K)), from which
+    # pseudo-counts are reconstructed; every other arm uses the renormalised Xn.
+    X_raw = X
 
     files = ([split_dir / f for f in args.splits] if args.splits
              else sorted(p for p in split_dir.glob("*.parquet")
@@ -133,20 +135,52 @@ def main(argv: list[str] | None = None) -> int:
                     o.unlink(missing_ok=True)
             t0 = time.time()
             with provenance.timed(f"{method}:{f.stem}", timings):
+                extra, hv, model = {}, None, None
                 if method == "hvg_pca":
                     hv = classical.select_hvg(Xn, train, max(hvg_grid))  # TRAIN only
                     tf, model = classical.fit_pca(Xn[:, hv], train, max(pc_grid),
                                                   seed=0)               # TRAIN only
                     Z = tf(Xn[:, hv])
+
+                elif method == "harmony":
+                    # PCA is fit on TRAIN only; the Harmony step is transductive
+                    # because harmonypy has no out-of-sample projection. That is a
+                    # DECLARED deviation and it advantages this baseline -- see
+                    # models/deep_classical.py for the full argument.
+                    hv = classical.select_hvg(Xn, train, max(hvg_grid))
+                    tf, model = classical.fit_pca(Xn[:, hv], train, max(pc_grid), seed=0)
+                    Zp = tf(Xn[:, hv])
+                    bkey = cfg["embeddings"]["harmony"].get("batch_key", ["dataset"])
+                    bkey = bkey if isinstance(bkey, list) else [bkey]
+                    batch = idx[bkey[0]].astype(str)
+                    for k in bkey[1:]:
+                        if k in idx.columns:
+                            batch = batch + "|" + idx[k].astype(str)
+                    Z, extra = deep_classical.fit_harmony(Zp, batch.to_numpy(), train, seed=0)
+
+                elif method == "scvi":
+                    # scVI IS inductive: trained on train cells, then encodes all.
+                    # Input is depth-normalised pseudo-counts because TISCH2 ships
+                    # log1p(CP10K), not UMIs -- see deep_classical.py.
+                    sc_cfg = cfg["embeddings"]["scvi"]
+                    Z, extra = deep_classical.fit_scvi(
+                        X_raw, train, idx["dataset"].to_numpy(),
+                        n_latent=int(sc_cfg["n_latent"]),
+                        max_epochs=int(sc_cfg["max_epochs"]),
+                        early_stopping=bool(sc_cfg.get("early_stopping", True)),
+                        seed=0)
                 else:
                     raise NotImplementedError(method)
             np.savez_compressed(o, emb=Z.astype(np.float32),
                                 cell_id=idx["cell_id"].to_numpy(),
-                                n_hvg=np.array([len(hv)]),
+                                n_hvg=np.array([len(hv) if hv is not None else 0]),
                                 pc_grid=np.array(pc_grid))
-            rows.append({"method": method, "split": f.stem, "n_hvg": int(len(hv)),
+            rows.append({"method": method, "split": f.stem,
+                         "n_hvg": int(len(hv)) if hv is not None else 0,
                          "n_components": int(Z.shape[1]),
-                         "explained_variance": float(model.explained_variance_ratio_.sum()),
+                         "explained_variance": (float(model.explained_variance_ratio_.sum())
+                                                if model is not None else float("nan")),
+                         **{f"info_{k}": v for k, v in extra.items()},
                          "seconds": round(time.time() - t0, 1)})
             print(f"  {method} {f.stem}: {Z.shape} "
                   f"evr={rows[-1]['explained_variance']:.3f} "

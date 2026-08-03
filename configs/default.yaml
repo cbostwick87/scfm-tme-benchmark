@@ -6,6 +6,18 @@
 run:
   name: full
   seeds: [0, 1, 2, 3, 4]          # 5 independent seeds per grid cell
+  # EXTRA SEEDS IN THE H2 CELL (post-hoc, declared). Seed noise is an order of
+  # magnitude larger at low label budgets than at budget=all, because the seed
+  # decides WHICH labelled cells you get -- measured on S3: sd 0.0898 at
+  # budget=5 versus 0.0137 at 'all'. That put H2, the study's most novel claim,
+  # at 0.32 power for a delta of 0.03. Extra seeds here cost little (these are
+  # the cheap cells) and lift power to ~0.64 at 20 seeds.
+  # This ADDS replication, so it weakens no pre-specified analysis -- but it is
+  # still a change made after seeing data and is reported as such.
+  extra_seeds:
+    seeds: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    schemes: [S3_leave_dataset_out]
+    budgets: [5, 10, 25, 50]
   n_workers: 3                    # 4 vCPU / 15 GiB shared -- see memory note below
   max_worker_rss_gb: 3.5          # 3 workers x 3.5 GiB leaves headroom; OOM is a design error
 
@@ -150,13 +162,28 @@ embeddings:
   # substantive comparison for H2 -- i.e. exactly the S3 regime.
   # ------------------------------------------------------------------
   scvi:
-    enabled: false               # implementation pending; see DECISIONS
+    enabled: true
     n_latent: 30
     max_epochs: 200
     early_stopping: true
+    # TISCH2 ships log1p(CP10K), never raw UMIs (measured: per-cell sum(expm1)
+    # is exactly 1e4). scVI's NB likelihood needs counts, so it is fed
+    # round(expm1(x)) -- depth-normalised pseudo-counts, applied identically to
+    # every dataset. True counts ARE exactly recoverable for 9 of 13 datasets
+    # but not the 4 plate-based ones; using true counts only where available
+    # would advantage scVI on 9 datasets and handicap it on 4, putting a
+    # per-dataset artefact straight into a paired contrast whose unit of
+    # replication IS the dataset. Read scVI here as a lower bound.
+    input: pseudo_counts_cp10k
   harmony:
-    enabled: false               # implementation pending; see DECISIONS
+    enabled: true
     batch_key: [dataset, donor]
+    # harmonypy 2.0 exposes no out-of-sample projection, so Harmony is fit
+    # TRANSDUCTIVELY over train+test PCA coordinates (batch key only, never
+    # labels). DECLARED DEVIATION from the train-only leakage control. It
+    # ADVANTAGES this baseline, i.e. biases toward the study's own expected
+    # conclusion, and must not be read as evidence for H1.
+    transductive: true
   celltypist:
     enabled: false               # specialist comparator, not a mandatory baseline
     model: Immune_All_Low.pkl

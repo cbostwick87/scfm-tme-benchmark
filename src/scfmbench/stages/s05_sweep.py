@@ -184,6 +184,32 @@ def _append_rows(rows_out, out_csv) -> None:
     df.to_csv(out_csv, mode="a", index=False, header=not out_csv.exists())
 
 
+def seeds_for(cfg, scheme: str, budget) -> list:
+    """Seeds to run for a given (scheme, budget).
+
+    The base seed list applies everywhere. An OPTIONAL `run.extra_seeds` block
+    adds seeds in specified cells only -- used for the H2 cell (low label budget
+    x leave-dataset-out), where seed noise is an order of magnitude larger than
+    at the unrestricted budget and the runs are cheap.
+
+    Extra seeds are ADDITIVE and cell-scoped by design: the number of seeds must
+    be recorded per row (n_seeds is computed at aggregation time from the rows
+    present), and a paired contrast within a cell is unaffected by how many
+    seeds a DIFFERENT cell used, because seeds are averaged to a dataset mean
+    before any test. Cells with more seeds simply have a less noisy mean.
+    """
+    base = list(cfg["run"]["seeds"])
+    ex = cfg["run"].get("extra_seeds")
+    if not ex:
+        return base
+    b = str(budget if budget is not None else "all")
+    ok_scheme = scheme in [str(s) for s in ex.get("schemes", [])]
+    ok_budget = b in [str(x if x is not None else "all") for x in ex.get("budgets", [])]
+    if ok_scheme and ok_budget:
+        return base + [s for s in ex["seeds"] if s not in base]
+    return base
+
+
 def _runkey(rep, split_name, budget, seed) -> tuple:
     """Canonical run key, normalised so a round-trip through CSV cannot change it.
 
@@ -454,7 +480,9 @@ def main(argv: list[str] | None = None) -> int:
             # 229,801-row matrix, and on a resumed run the loop would otherwise pay
             # that cost for every split whose runs are already complete -- 45 min of
             # pure I/O with nothing recorded, which reads exactly like a stall.
-            wanted = [(b, s) for b in budgets for s in cfg["run"]["seeds"]
+            scheme_name = sf.name.split("__")[0]
+            wanted = [(b, s) for b in budgets
+                      for s in seeds_for(cfg, scheme_name, b)
                       if _runkey(rep, sf.name, b, s) not in done]
             if not wanted:
                 print(f"[skip] {rep} {sf.stem}: all runs already complete", flush=True)
@@ -475,7 +503,7 @@ def main(argv: list[str] | None = None) -> int:
             Z = cache[key_rep]
 
             for budget in budgets:
-                for seed in cfg["run"]["seeds"]:
+                for seed in seeds_for(cfg, scheme_name, budget):
                     # _runkey, never an ad-hoc str() cast: `budget=None` must
                     # render as "all" and a float-inferred seed as an integer, or
                     # the key silently misses and the run is recomputed.
