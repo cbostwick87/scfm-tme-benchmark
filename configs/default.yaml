@@ -133,16 +133,32 @@ embeddings:
     n_pcs_grid: [30, 50, 100]
     hvg_flavor: dispersion_binned      # normalised dispersion, binned by mean
     incremental_pca: false             # randomized SVD on a train subsample
+  # ------------------------------------------------------------------
+  # NOT YET IMPLEMENTED. These flags previously read `enabled: true` while no
+  # implementation and no embeddings existed -- a config asserting a capability
+  # the code does not have, which hides the gap instead of surfacing it. An
+  # external review caught it. They are now false, so `make stage.embed` cannot
+  # silently claim to have run them, and the omission is visible in the config
+  # a reader inspects first.
+  #
+  # THIS IS A SPEC GAP, NOT A PREFERENCE. The brief places scVI and Harmony in a
+  # <baselines MANDATORY="true"> block, and H2 is stated as scFMs "match or exceed
+  # scVI and Harmony". With these off, H2 is testable ONLY against HVG+PCA and
+  # must be restated as such wherever it is reported. Harmony is additionally the
+  # only baseline designed for the batch/distribution shift S3 tests, and the
+  # brief cites Wu et al. on scVI's limited cross-dataset transferability as a
+  # substantive comparison for H2 -- i.e. exactly the S3 regime.
+  # ------------------------------------------------------------------
   scvi:
-    enabled: true
+    enabled: false               # implementation pending; see DECISIONS
     n_latent: 30
     max_epochs: 200
     early_stopping: true
   harmony:
-    enabled: true
+    enabled: false               # implementation pending; see DECISIONS
     batch_key: [dataset, donor]
   celltypist:
-    enabled: true
+    enabled: false               # specialist comparator, not a mandatory baseline
     model: Immune_All_Low.pkl
 
 classifier:
