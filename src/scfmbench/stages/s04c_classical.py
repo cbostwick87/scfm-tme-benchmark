@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import gc
 import time
 
 import anndata as ad
@@ -168,12 +169,19 @@ def main(argv: list[str] | None = None) -> int:
                     # 55 min and swap on a 15 GiB host.
                     hv = classical.select_hvg(Xn, train,
                                               int(sc_cfg.get("n_hvg", 2000)))
+                    # MEMORY: slice to HVGs HERE and pass only that, so the
+                    # 229,801 x 11,054 matrix is not resident while scVI's
+                    # dataloader and model are also live. The fit was OOM-killed
+                    # at 12.9 GiB RSS holding both (earlyoom, 02:04:53); the
+                    # HVG slice is ~5x smaller.
+                    X_hvg = X_raw[:, hv]
                     Z, extra = deep_classical.fit_scvi(
-                        X_raw, train, idx["dataset"].to_numpy(),
+                        X_hvg, train, idx["dataset"].to_numpy(),
                         n_latent=int(sc_cfg["n_latent"]),
                         max_epochs=int(sc_cfg["max_epochs"]),
                         early_stopping=bool(sc_cfg.get("early_stopping", True)),
-                        seed=0, hvg_mask=hv)
+                        seed=0, hvg_mask=None)
+                    del X_hvg
                 else:
                     raise NotImplementedError(method)
             np.savez_compressed(o, emb=Z.astype(np.float32),
@@ -190,6 +198,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {method} {f.stem}: {Z.shape} "
                   f"evr={rows[-1]['explained_variance']:.3f} "
                   f"{rows[-1]['seconds']}s", flush=True)
+            # Release this split's working set before the next split allocates
+            # its own. Without this, the PCA transform closure and the Harmony
+            # input both stay referenced across iterations and RSS ratchets
+            # upward until the OOM daemon intervenes.
+            Z = None
+            gc.collect()
             (d / "_stats").mkdir(exist_ok=True)
             (d / "_stats" / f"{f.stem}.json").write_text(json.dumps(rows[-1]))
 
