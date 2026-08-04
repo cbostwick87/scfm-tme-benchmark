@@ -1,76 +1,76 @@
-method,split,n_hvg,n_components,explained_variance,seconds
-hvg_pca,S1_within_dataset__seed0,8000,100,0.19963039457798004,39.8
-hvg_pca,S1_within_dataset__seed1,8000,100,0.1996259242296219,38.8
-hvg_pca,S1_within_dataset__seed2,8000,100,0.19979706406593323,38.7
-hvg_pca,S1_within_dataset__seed3,8000,100,0.19983969628810883,38.8
-hvg_pca,S1_within_dataset__seed4,8000,100,0.1998893767595291,38.8
-hvg_pca,S2_leave_donor_out__seed0,8000,100,0.2045656442642212,39.0
-hvg_pca,S2_leave_donor_out__seed1,8000,100,0.20140737295150757,38.3
-hvg_pca,S2_leave_donor_out__seed2,8000,100,0.19946260750293732,39.0
-hvg_pca,S2_leave_donor_out__seed3,8000,100,0.2014906257390976,39.0
-hvg_pca,S2_leave_donor_out__seed4,8000,100,0.1982784867286682,39.1
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE103322,8000,100,0.19000795483589172,39.4
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE108989,8000,100,0.1905754655599594,39.0
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE111672,8000,100,0.1905754655599594,39.2
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE125449,8000,100,0.1921261101961136,39.1
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE127465,8000,100,0.1902017742395401,38.6
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE131907,8000,100,0.18891941010951996,38.2
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE134520,8000,100,0.191761314868927,38.9
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE140228,8000,100,0.19709867238998413,38.5
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE146771,8000,100,0.19612306356430054,38.6
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE154778,8000,100,0.19612306356430054,38.6
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE161529,8000,100,0.20185883343219757,38.6
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE176078,8000,100,0.20185883343219757,38.5
-hvg_pca,S3_leave_dataset_out__seed0__holdout-GSE98638,8000,100,0.20252232253551483,39.0
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE103322,8000,100,0.20321442186832428,38.8
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE108989,8000,100,0.20296761393547058,38.6
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE111672,8000,100,0.2061578333377838,39.3
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE125449,8000,100,0.2076113075017929,39.2
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE127465,8000,100,0.2076113075017929,39.1
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE131907,8000,100,0.20490239560604095,38.8
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE134520,8000,100,0.20579665899276733,39.8
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE140228,8000,100,0.20579665899276733,39.5
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE146771,8000,100,0.20451569557189941,39.7
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE154778,8000,100,0.19354107975959778,39.7
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE161529,8000,100,0.1985541582107544,39.4
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE176078,8000,100,0.1985541582107544,39.8
-hvg_pca,S3_leave_dataset_out__seed1__holdout-GSE98638,8000,100,0.19980962574481964,40.4
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE103322,8000,100,0.19261085987091064,39.3
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE108989,8000,100,0.19259662926197052,39.1
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE111672,8000,100,0.19259662926197052,39.2
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE125449,8000,100,0.19415998458862305,39.0
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE127465,8000,100,0.1944996863603592,38.8
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE131907,8000,100,0.1944996863603592,38.7
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE134520,8000,100,0.19440460205078125,39.3
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE140228,8000,100,0.2022707164287567,38.8
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE146771,8000,100,0.20115332305431366,38.8
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE154778,8000,100,0.20115332305431366,39.0
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE161529,8000,100,0.207639679312706,39.3
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE176078,8000,100,0.20267146825790405,38.7
-hvg_pca,S3_leave_dataset_out__seed2__holdout-GSE98638,8000,100,0.20320075750350952,39.4
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE103322,8000,100,0.1947890669107437,40.0
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE108989,8000,100,0.19440460205078125,39.4
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE111672,8000,100,0.1964883953332901,40.3
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE125449,8000,100,0.1973516345024109,40.0
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE127465,8000,100,0.1973516345024109,40.1
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE131907,8000,100,0.19640889763832092,39.7
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE134520,8000,100,0.19640889763832092,39.8
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE140228,8000,100,0.2038862407207489,39.1
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE146771,8000,100,0.20252589881420135,39.3
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE154778,8000,100,0.20252589881420135,39.3
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE161529,8000,100,0.2076158970594406,39.3
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE176078,8000,100,0.20357365906238556,38.8
-hvg_pca,S3_leave_dataset_out__seed3__holdout-GSE98638,8000,100,0.20471394062042236,39.6
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE103322,8000,100,0.19729982316493988,40.2
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE108989,8000,100,0.19673851132392883,39.7
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE111672,8000,100,0.19909892976284027,40.5
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE125449,8000,100,0.20062482357025146,40.4
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE127465,8000,100,0.20062482357025146,40.3
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE131907,8000,100,0.1992475688457489,40.0
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE134520,8000,100,0.1992475688457489,40.0
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE140228,8000,100,0.20567204058170319,39.4
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE146771,8000,100,0.20471394062042236,39.6
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE154778,8000,100,0.19530263543128967,39.5
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE161529,8000,100,0.19964151084423065,39.4
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE176078,8000,100,0.19595929980278015,39.4
-hvg_pca,S3_leave_dataset_out__seed4__holdout-GSE98638,8000,100,0.19595929980278015,39.2
+method,split,n_hvg,n_components,explained_variance,info_transductive,info_n_batches,info_skipped,info_n_train_cells,info_leakage_note,seconds
+harmony,S1_within_dataset__seed0,8000,100,0.19963039457798004,True,226,False,137881,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",120.3
+harmony,S1_within_dataset__seed1,8000,100,0.1996259242296219,True,226,False,137881,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.0
+harmony,S1_within_dataset__seed2,8000,100,0.19979706406593323,True,226,False,137881,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.5
+harmony,S1_within_dataset__seed3,8000,100,0.19983969628810883,True,226,False,137881,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.8
+harmony,S1_within_dataset__seed4,8000,100,0.1998893767595291,True,226,False,137881,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.9
+harmony,S2_leave_donor_out__seed0,8000,100,0.2045656442642212,True,226,False,142131,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.0
+harmony,S2_leave_donor_out__seed1,8000,100,0.20140737295150757,True,226,False,127921,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.0
+harmony,S2_leave_donor_out__seed2,8000,100,0.19946260750293732,True,226,False,147825,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",120.1
+harmony,S2_leave_donor_out__seed3,8000,100,0.2014906257390976,True,226,False,143577,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.3
+harmony,S2_leave_donor_out__seed4,8000,100,0.1982784867286682,True,226,False,143036,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.6
+harmony,S3_leave_dataset_out__seed0__holdout-GSE103322,8000,100,0.19000795483589172,True,226,False,176698,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.5
+harmony,S3_leave_dataset_out__seed0__holdout-GSE108989,8000,100,0.1905754655599594,True,226,False,171661,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.5
+harmony,S3_leave_dataset_out__seed0__holdout-GSE111672,8000,100,0.1905754655599594,True,226,False,171661,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.8
+harmony,S3_leave_dataset_out__seed0__holdout-GSE125449,8000,100,0.1921261101961136,True,226,False,169489,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.6
+harmony,S3_leave_dataset_out__seed0__holdout-GSE127465,8000,100,0.1902017742395401,True,226,False,143924,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.2
+harmony,S3_leave_dataset_out__seed0__holdout-GSE131907,8000,100,0.18891941010951996,True,226,False,143919,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.4
+harmony,S3_leave_dataset_out__seed0__holdout-GSE134520,8000,100,0.191761314868927,True,226,False,167391,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.0
+harmony,S3_leave_dataset_out__seed0__holdout-GSE140228,8000,100,0.19709867238998413,True,226,False,143923,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.4
+harmony,S3_leave_dataset_out__seed0__holdout-GSE146771,8000,100,0.19612306356430054,True,226,False,143922,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",115.7
+harmony,S3_leave_dataset_out__seed0__holdout-GSE154778,8000,100,0.19612306356430054,True,226,False,143922,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.7
+harmony,S3_leave_dataset_out__seed0__holdout-GSE161529,8000,100,0.20185883343219757,True,226,False,128875,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.2
+harmony,S3_leave_dataset_out__seed0__holdout-GSE176078,8000,100,0.20185883343219757,True,226,False,128875,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.5
+harmony,S3_leave_dataset_out__seed0__holdout-GSE98638,8000,100,0.20252232253551483,True,226,False,154077,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.0
+harmony,S3_leave_dataset_out__seed1__holdout-GSE103322,8000,100,0.20321442186832428,True,226,False,133913,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.5
+harmony,S3_leave_dataset_out__seed1__holdout-GSE108989,8000,100,0.20296761393547058,True,226,False,128876,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.6
+harmony,S3_leave_dataset_out__seed1__holdout-GSE111672,8000,100,0.2061578333377838,True,226,False,137534,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.7
+harmony,S3_leave_dataset_out__seed1__holdout-GSE125449,8000,100,0.2076113075017929,True,226,False,135362,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.2
+harmony,S3_leave_dataset_out__seed1__holdout-GSE127465,8000,100,0.2076113075017929,True,226,False,135362,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.2
+harmony,S3_leave_dataset_out__seed1__holdout-GSE131907,8000,100,0.20490239560604095,True,226,False,135357,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",115.6
+harmony,S3_leave_dataset_out__seed1__holdout-GSE134520,8000,100,0.20579665899276733,True,226,False,158829,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.6
+harmony,S3_leave_dataset_out__seed1__holdout-GSE140228,8000,100,0.20579665899276733,True,226,False,158829,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.3
+harmony,S3_leave_dataset_out__seed1__holdout-GSE146771,8000,100,0.20451569557189941,True,226,False,158828,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.1
+harmony,S3_leave_dataset_out__seed1__holdout-GSE154778,8000,100,0.19354107975959778,True,226,False,173877,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.3
+harmony,S3_leave_dataset_out__seed1__holdout-GSE161529,8000,100,0.1985541582107544,True,226,False,158830,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.6
+harmony,S3_leave_dataset_out__seed1__holdout-GSE176078,8000,100,0.1985541582107544,True,226,False,158830,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.8
+harmony,S3_leave_dataset_out__seed1__holdout-GSE98638,8000,100,0.19980962574481964,True,226,False,184032,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.8
+harmony,S3_leave_dataset_out__seed2__holdout-GSE103322,8000,100,0.19261085987091064,True,226,False,176696,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.8
+harmony,S3_leave_dataset_out__seed2__holdout-GSE108989,8000,100,0.19259662926197052,True,226,False,171659,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.5
+harmony,S3_leave_dataset_out__seed2__holdout-GSE111672,8000,100,0.19259662926197052,True,226,False,171659,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.6
+harmony,S3_leave_dataset_out__seed2__holdout-GSE125449,8000,100,0.19415998458862305,True,226,False,169487,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.4
+harmony,S3_leave_dataset_out__seed2__holdout-GSE127465,8000,100,0.1944996863603592,True,226,False,143922,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.2
+harmony,S3_leave_dataset_out__seed2__holdout-GSE131907,8000,100,0.1944996863603592,True,226,False,143922,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.3
+harmony,S3_leave_dataset_out__seed2__holdout-GSE134520,8000,100,0.19440460205078125,True,226,False,167394,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.4
+harmony,S3_leave_dataset_out__seed2__holdout-GSE140228,8000,100,0.2022707164287567,True,226,False,143926,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.4
+harmony,S3_leave_dataset_out__seed2__holdout-GSE146771,8000,100,0.20115332305431366,True,226,False,143925,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.9
+harmony,S3_leave_dataset_out__seed2__holdout-GSE154778,8000,100,0.20115332305431366,True,226,False,143925,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.1
+harmony,S3_leave_dataset_out__seed2__holdout-GSE161529,8000,100,0.207639679312706,True,226,False,128878,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.7
+harmony,S3_leave_dataset_out__seed2__holdout-GSE176078,8000,100,0.20267146825790405,True,226,False,128875,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.9
+harmony,S3_leave_dataset_out__seed2__holdout-GSE98638,8000,100,0.20320075750350952,True,226,False,154077,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.6
+harmony,S3_leave_dataset_out__seed3__holdout-GSE103322,8000,100,0.1947890669107437,True,226,False,172431,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.1
+harmony,S3_leave_dataset_out__seed3__holdout-GSE108989,8000,100,0.19440460205078125,True,226,False,167394,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.3
+harmony,S3_leave_dataset_out__seed3__holdout-GSE111672,8000,100,0.1964883953332901,True,226,False,176052,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",120.1
+harmony,S3_leave_dataset_out__seed3__holdout-GSE125449,8000,100,0.1973516345024109,True,226,False,173880,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.8
+harmony,S3_leave_dataset_out__seed3__holdout-GSE127465,8000,100,0.1973516345024109,True,226,False,173880,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",120.6
+harmony,S3_leave_dataset_out__seed3__holdout-GSE131907,8000,100,0.19640889763832092,True,226,False,173875,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.9
+harmony,S3_leave_dataset_out__seed3__holdout-GSE134520,8000,100,0.19640889763832092,True,226,False,173875,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.7
+harmony,S3_leave_dataset_out__seed3__holdout-GSE140228,8000,100,0.2038862407207489,True,226,False,150407,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.3
+harmony,S3_leave_dataset_out__seed3__holdout-GSE146771,8000,100,0.20252589881420135,True,226,False,150406,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.4
+harmony,S3_leave_dataset_out__seed3__holdout-GSE154778,8000,100,0.20252589881420135,True,226,False,150406,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.8
+harmony,S3_leave_dataset_out__seed3__holdout-GSE161529,8000,100,0.2076158970594406,True,226,False,135359,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.6
+harmony,S3_leave_dataset_out__seed3__holdout-GSE176078,8000,100,0.20357365906238556,True,226,False,135356,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.4
+harmony,S3_leave_dataset_out__seed3__holdout-GSE98638,8000,100,0.20471394062042236,True,226,False,160558,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.5
+harmony,S3_leave_dataset_out__seed4__holdout-GSE103322,8000,100,0.19729982316493988,True,226,False,182583,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.8
+harmony,S3_leave_dataset_out__seed4__holdout-GSE108989,8000,100,0.19673851132392883,True,226,False,177546,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.0
+harmony,S3_leave_dataset_out__seed4__holdout-GSE111672,8000,100,0.19909892976284027,True,226,False,186204,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",118.8
+harmony,S3_leave_dataset_out__seed4__holdout-GSE125449,8000,100,0.20062482357025146,True,226,False,184032,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.6
+harmony,S3_leave_dataset_out__seed4__holdout-GSE127465,8000,100,0.20062482357025146,True,226,False,184032,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",120.3
+harmony,S3_leave_dataset_out__seed4__holdout-GSE131907,8000,100,0.1992475688457489,True,226,False,184027,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.8
+harmony,S3_leave_dataset_out__seed4__holdout-GSE134520,8000,100,0.1992475688457489,True,226,False,184027,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",119.3
+harmony,S3_leave_dataset_out__seed4__holdout-GSE140228,8000,100,0.20567204058170319,True,226,False,160559,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.6
+harmony,S3_leave_dataset_out__seed4__holdout-GSE146771,8000,100,0.20471394062042236,True,226,False,160558,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.2
+harmony,S3_leave_dataset_out__seed4__holdout-GSE154778,8000,100,0.19530263543128967,True,226,False,175607,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.7
+harmony,S3_leave_dataset_out__seed4__holdout-GSE161529,8000,100,0.19964151084423065,True,226,False,160560,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.8
+harmony,S3_leave_dataset_out__seed4__holdout-GSE176078,8000,100,0.19595929980278015,True,226,False,160557,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",117.8
+harmony,S3_leave_dataset_out__seed4__holdout-GSE98638,8000,100,0.19595929980278015,True,226,False,160557,"Harmony saw test-cell EXPRESSION (never labels); declared deviation from the train-only control, and it advantages this baseline",116.7

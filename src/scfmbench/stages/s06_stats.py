@@ -63,6 +63,23 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
     sd = d.std(ddof=1)
     dz = float(d.mean() / sd) if sd > 0 else float("nan")
 
+    # SEEDS BEHIND EACH ARM, surfaced in the primary statistics table.
+    # Seed counts are deliberately NOT uniform across the design: the H2 cell runs
+    # 20 seeds, the unrestricted budget runs 2 (the seed there does not change the
+    # training data, only CV folds and the solver state), and everything else runs
+    # 5. Both are post-hoc decisions, so a reader must be able to see the
+    # replication behind any number in T3 without cross-referencing the config.
+    # Reported as a range because it can legitimately differ between the two arms
+    # of one contrast if a representation is missing a run.
+    seed_note = {}
+    if "n_seeds" in df.columns:
+        for arm in (a, b):
+            s = df.loc[df["representation"] == arm, "n_seeds"].dropna()
+            if len(s):
+                lo_s, hi_s = int(s.min()), int(s.max())
+                seed_note[f"n_seeds_{'a' if arm == a else 'b'}"] = (
+                    str(lo_s) if lo_s == hi_s else f"{lo_s}-{hi_s}")
+
     return {"contrast": f"{a} - {b}", "metric": metric, "n_datasets": int(n),
             "delta_mean": float(d.mean()), "delta_median": float(np.median(d)),
             "ci95_lo": float(lo), "ci95_hi": float(hi),
@@ -70,6 +87,7 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
             "wilcoxon_stat": float(w_stat), "p_raw": float(w_p),
             "ttest_p": float(t_p),
             "n_datasets_favouring_a": int((d > 0).sum()),
+            **seed_note,
             "datasets": ";".join(pair.index.astype(str))}
 
 

@@ -199,6 +199,30 @@ def seeds_for(cfg, scheme: str, budget) -> list:
     before any test. Cells with more seeds simply have a less noisy mean.
     """
     base = list(cfg["run"]["seeds"])
+
+    # REDUCTION comes first and is checked against the FULL base list, so the two
+    # blocks cannot interact: a budget named in `reduced_seeds` is never also
+    # eligible for `extra_seeds` (asserted below rather than assumed).
+    red = cfg["run"].get("reduced_seeds")
+    if red:
+        b_now = str(budget if budget is not None else "all")
+        red_budgets = [str(x if x is not None else "all") for x in red["budgets"]]
+        ex_chk = cfg["run"].get("extra_seeds") or {}
+        ex_budgets = [str(x if x is not None else "all") for x in ex_chk.get("budgets", [])]
+        overlap = set(red_budgets) & set(ex_budgets)
+        if overlap:
+            raise ValueError(
+                f"budgets {sorted(overlap)} appear in BOTH reduced_seeds and "
+                "extra_seeds; a budget cannot be simultaneously boosted and cut")
+        if b_now in red_budgets:
+            n = int(red["n_seeds"])
+            if n < 2:
+                raise ValueError(
+                    "reduced_seeds.n_seeds < 2 is refused: measured worst-case "
+                    "dataset-mean shift at 1 seed is 0.0218, above the 0.02 "
+                    "negligibility threshold")
+            return base[:n]
+
     ex = cfg["run"].get("extra_seeds")
     if not ex:
         return base

@@ -18,6 +18,24 @@ run:
     seeds: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     schemes: [S3_leave_dataset_out]
     budgets: [5, 10, 25, 50]
+  # REDUCED SEEDS AT THE UNRESTRICTED BUDGET (post-hoc, declared, measured).
+  # At budget='all' the seed does NOT change which cells are trained on -- verified
+  # on completed runs: n_train_used is identical across seeds in 112 of 112
+  # (representation, split) cells. The seed only reshuffles inner-CV folds and the
+  # solver's own random_state, so these replicates measure SOLVER AND FOLD noise,
+  # not the label-selection noise the study exists to characterise. At every capped
+  # budget the seed does decide which labelled cells you get, so seeds stay at 5
+  # (or 20 in the H2 cell) there -- this reduction is confined to the one cell
+  # where replication is not measuring the quantity of interest.
+  # Measured impact on the DATASET MEAN, which is the unit of replication:
+  #   2 seeds vs 5: typical shift 0.00038, worst case 0.01515  -> below the
+  #                 pre-specified 0.02 negligibility floor
+  #   1 seed  vs 5: worst case 0.02180                        -> ABOVE it, so 2
+  #                 is the floor of what is defensible, not an arbitrary pick.
+  # Saves ~35 h of 136 h. Reported in Limitations as a post-hoc change.
+  reduced_seeds:
+    budgets: [all]
+    n_seeds: 2
   n_workers: 3                    # 4 vCPU / 15 GiB shared -- see memory note below
   max_worker_rss_gb: 3.5          # 3 workers x 3.5 GiB leaves headroom; OOM is a design error
 
