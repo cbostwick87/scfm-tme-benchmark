@@ -99,7 +99,8 @@ def to_pseudo_counts(X) -> sp.csr_matrix:
 
 
 def fit_scvi(X, train_mask: np.ndarray, batch_labels, n_latent: int = 30,
-             max_epochs: int = 200, seed: int = 0, early_stopping: bool = True):
+             max_epochs: int = 60, seed: int = 0, early_stopping: bool = True,
+             hvg_mask=None):
     """scVI latent space. TRAINED ON TRAIN CELLS ONLY, then encodes all cells.
 
     scVI is genuinely inductive: the encoder is a function of expression, so
@@ -115,6 +116,19 @@ def fit_scvi(X, train_mask: np.ndarray, batch_labels, n_latent: int = 30,
     import torch
 
     scvi.settings.seed = seed
+
+    # HVG RESTRICTION -- correctness first, cost second.
+    # scVI is standardly trained on highly variable genes rather than the full
+    # gene space, and the brief specifies the same for scGPT (top-3000 HVGs).
+    # Measured consequence of getting this wrong: on all 11,054 common genes a
+    # single split ran past 55 minutes and pushed 1.7 GiB into swap on a 15 GiB
+    # host; on 2,000 HVGs it is 9.7 s/epoch at the same 137,881 training cells.
+    # `hvg_mask` MUST have been selected on the TRAINING partition only. It is
+    # passed in rather than computed here so it comes from the same train-only
+    # selector every other arm uses, instead of a second implementation that
+    # could drift from it.
+    if hvg_mask is not None:
+        X = X[:, hvg_mask]
     counts = to_pseudo_counts(X)
 
     obs = pd.DataFrame({"batch": np.asarray(batch_labels, dtype=object)},
@@ -144,6 +158,7 @@ def fit_scvi(X, train_mask: np.ndarray, batch_labels, n_latent: int = 30,
     Z = model.get_latent_representation(adata).astype(np.float32)
 
     return Z, {"n_latent": int(n_latent), "batch_covariate_used": bool(use_batch),
+               "n_genes_used": int(counts.shape[1]),
                "n_train_cells": int(train_mask.sum()),
                "epochs_run": int(model.trainer.current_epoch),
                "accelerator": accel}

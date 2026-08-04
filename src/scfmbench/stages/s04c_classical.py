@@ -163,12 +163,17 @@ def main(argv: list[str] | None = None) -> int:
                     # Input is depth-normalised pseudo-counts because TISCH2 ships
                     # log1p(CP10K), not UMIs -- see deep_classical.py.
                     sc_cfg = cfg["embeddings"]["scvi"]
+                    # HVGs selected on TRAIN ONLY, same selector as every other
+                    # arm. Passing the full gene space made a single split exceed
+                    # 55 min and swap on a 15 GiB host.
+                    hv = classical.select_hvg(Xn, train,
+                                              int(sc_cfg.get("n_hvg", 2000)))
                     Z, extra = deep_classical.fit_scvi(
                         X_raw, train, idx["dataset"].to_numpy(),
                         n_latent=int(sc_cfg["n_latent"]),
                         max_epochs=int(sc_cfg["max_epochs"]),
                         early_stopping=bool(sc_cfg.get("early_stopping", True)),
-                        seed=0)
+                        seed=0, hvg_mask=hv)
                 else:
                     raise NotImplementedError(method)
             np.savez_compressed(o, emb=Z.astype(np.float32),
