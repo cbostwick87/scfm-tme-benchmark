@@ -63,7 +63,7 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
     sd = d.std(ddof=1)
     dz = float(d.mean() / sd) if sd > 0 else float("nan")
 
-    # SEEDS BEHIND EACH ARM, surfaced in the primary statistics table.
+    # RUNS BEHIND EACH ARM, surfaced in the primary statistics table.
     # Seed counts are deliberately NOT uniform across the design: the H2 cell runs
     # 20 seeds, the unrestricted budget runs 2 (the seed there does not change the
     # training data, only CV folds and the solver state), and everything else runs
@@ -72,12 +72,12 @@ def paired_contrast(df: pd.DataFrame, a: str, b: str, metric: str,
     # Reported as a range because it can legitimately differ between the two arms
     # of one contrast if a representation is missing a run.
     seed_note = {}
-    if "n_seeds" in df.columns:
+    if "n_runs" in df.columns:
         for arm in (a, b):
-            s = df.loc[df["representation"] == arm, "n_seeds"].dropna()
+            s = df.loc[df["representation"] == arm, "n_runs"].dropna()
             if len(s):
                 lo_s, hi_s = int(s.min()), int(s.max())
-                seed_note[f"n_seeds_{'a' if arm == a else 'b'}"] = (
+                seed_note[f"n_runs_{'a' if arm == a else 'b'}"] = (
                     str(lo_s) if lo_s == hi_s else f"{lo_s}-{hi_s}")
 
     return {"contrast": f"{a} - {b}", "metric": metric, "n_datasets": int(n),
@@ -117,8 +117,14 @@ def aggregate_seeds(t2: pd.DataFrame, metric: str) -> pd.DataFrame:
     keys = ["dataset", "representation", "scheme", "budget"]
     agg = (t2.groupby(keys, dropna=False)[metric]
              .agg(["mean", "std", "count"]).reset_index()
-             .rename(columns={"mean": metric, "std": f"{metric}_seed_sd",
-                              "count": "n_seeds"}))
+             .rename(columns={"mean": metric, "std": f"{metric}_resample_sd",
+                              "count": "n_runs"}))
+    # NAMED n_runs, NOT n_seeds. The count is split-partitions x label-seeds --
+    # under S1 with 5 split files and 5 seeds it is 25, not 5. Both are
+    # resampling noise that is averaged away before the dataset-level test, so
+    # the aggregation was always correct; the earlier name invited a reader to
+    # believe the design ran 25 seeds. A misleading column name in a published
+    # results table is a reporting defect even when the arithmetic is right.
     return agg
 
 

@@ -193,7 +193,7 @@ def seeds_for(cfg, scheme: str, budget) -> list:
     at the unrestricted budget and the runs are cheap.
 
     Extra seeds are ADDITIVE and cell-scoped by design: the number of seeds must
-    be recorded per row (n_seeds is computed at aggregation time from the rows
+    be recorded per row (n_runs is computed at aggregation time from the rows
     present), and a paired contrast within a cell is unaffected by how many
     seeds a DIFFERENT cell used, because seeds are averaged to a dataset mean
     before any test. Cells with more seeds simply have a less noisy mean.
