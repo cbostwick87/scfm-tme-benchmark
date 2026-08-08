@@ -80,7 +80,8 @@ def main(argv: list[str] | None = None) -> int:
               .assign(bstr=lambda d: d.budget.astype(str))
               .query("bstr in @args.budgets")
               .groupby(["representation", "split_file", "budget", "seed"], as_index=False)
-              .agg(C_selected=("C_selected", "first")))
+              .agg(C_selected=("C_selected", "first"),
+                   n_dims_selected=("n_dims_selected", "first")))
     if args.limit:
         runs = runs.head(args.limit)
     print(f"rescoring {len(runs)} runs", flush=True)
@@ -108,9 +109,28 @@ def main(argv: list[str] | None = None) -> int:
         # fit_standardiser takes the TRAINING MATRIX, not indices. Fitting it on
         # the budget-subsampled training rows is what the sweep does, so the
         # refit sees exactly the same scaling as the original run.
-        scale = fit_standardiser(E[tr_idx])
-        Xtr, ytr = scale(E[tr_idx]), y_all[tr_idx]
-        Xte, yte = scale(E[te]), y_all[te]
+        # TRUNCATE TO THE SELECTED DIMENSIONALITY before anything else.
+        # hvg_pca's PC count is chosen by inner CV per run (30/50/100 observed),
+        # while every other representation is fixed-width (Geneformer 768, scGPT
+        # 512, scVI 30, Harmony 100). The first version of this stage used the
+        # full stored matrix regardless, so for hvg_pca it refit a
+        # HIGHER-DIMENSIONAL model than the run it claimed to reconstruct. That
+        # produced 1,966 reconstruction failures -- 100% of them hvg_pca, 99% at
+        # budget=10 where the fewest PCs are selected, with a median error of
+        # -0.065 macro-F1. The guard caught it. Without the guard those rows
+        # would have entered the rarity analysis as per-class scores for a model
+        # the study never ran, and they would have been systematically biased
+        # against the baseline.
+        n_dims = int(r.n_dims_selected)
+        if n_dims > E.shape[1]:
+            raise ValueError(
+                f"run selected {n_dims} dims but the stored matrix has "
+                f"{E.shape[1]}; refusing to reconstruct a model that cannot exist")
+        Esel = E[:, :n_dims]
+
+        scale = fit_standardiser(Esel[tr_idx])
+        Xtr, ytr = scale(Esel[tr_idx]), y_all[tr_idx]
+        Xte, yte = scale(Esel[te]), y_all[te]
 
         with provenance.timed(f"{r.representation}:{stem}:{r.budget}:{r.seed}", timings):
             mdl = GPULogisticRegression(C=float(r.C_selected),

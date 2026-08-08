@@ -1,32 +1,62 @@
 [
   {
-    "step": "geneformer:S1_within_dataset__seed0:10:0",
-    "seconds": 3.036,
-    "timestamp_utc": "2026-08-08T12:33:41Z"
+    "step": "hvg_pca:S1_within_dataset__seed0:10:0",
+    "seconds": 2.772,
+    "timestamp_utc": "2026-08-08T17:43:02Z"
   },
   {
-    "step": "geneformer:S1_within_dataset__seed0:10:1",
-    "seconds": 0.272,
-    "timestamp_utc": "2026-08-08T12:33:43Z"
+    "step": "hvg_pca:S1_within_dataset__seed0:10:1",
+    "seconds": 0.06,
+    "timestamp_utc": "2026-08-08T17:43:03Z"
   },
   {
-    "step": "geneformer:S1_within_dataset__seed0:10:2",
-    "seconds": 0.266,
-    "timestamp_utc": "2026-08-08T12:33:44Z"
+    "step": "hvg_pca:S1_within_dataset__seed0:10:2",
+    "seconds": 0.095,
+    "timestamp_utc": "2026-08-08T17:43:03Z"
   },
   {
-    "step": "geneformer:S1_within_dataset__seed0:10:3",
-    "seconds": 0.195,
-    "timestamp_utc": "2026-08-08T12:33:45Z"
+    "step": "hvg_pca:S1_within_dataset__seed0:10:3",
+    "seconds": 0.055,
+    "timestamp_utc": "2026-08-08T17:43:04Z"
   },
   {
-    "step": "geneformer:S1_within_dataset__seed0:10:4",
-    "seconds": 0.303,
-    "timestamp_utc": "2026-08-08T12:33:46Z"
+    "step": "hvg_pca:S1_within_dataset__seed0:10:4",
+    "seconds": 0.241,
+    "timestamp_utc": "2026-08-08T17:43:05Z"
   },
   {
-    "step": "geneformer:S1_within_dataset__seed0:all:0",
-    "seconds": 8.697,
-    "timestamp_utc": "2026-08-08T12:33:56Z"
+    "step": "hvg_pca:S1_within_dataset__seed1:10:0",
+    "seconds": 0.035,
+    "timestamp_utc": "2026-08-08T17:43:06Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed1:10:1",
+    "seconds": 0.053,
+    "timestamp_utc": "2026-08-08T17:43:07Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed1:10:2",
+    "seconds": 0.01,
+    "timestamp_utc": "2026-08-08T17:43:08Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed1:10:3",
+    "seconds": 0.087,
+    "timestamp_utc": "2026-08-08T17:43:08Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed1:10:4",
+    "seconds": 0.064,
+    "timestamp_utc": "2026-08-08T17:43:09Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed2:10:0",
+    "seconds": 0.133,
+    "timestamp_utc": "2026-08-08T17:43:11Z"
+  },
+  {
+    "step": "hvg_pca:S1_within_dataset__seed2:10:1",
+    "seconds": 0.039,
+    "timestamp_utc": "2026-08-08T17:43:11Z"
   }
 ]
