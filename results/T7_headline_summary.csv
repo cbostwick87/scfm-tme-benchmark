@@ -1,0 +1,37 @@
+scheme,budget,contrast,delta,lo,hi,p_fdr,dz,won,verdict
+Within dataset,5,Geneformer − HVG+PCA,-0.0238,-0.0618,0.0097,0.7215,-0.35,6/13,no detectable difference
+Within dataset,5,scGPT − HVG+PCA,-0.0594,-0.1154,-0.0104,0.1496,-0.59,3/13,no detectable difference
+Within dataset,10,Geneformer − HVG+PCA,-0.0094,-0.0431,0.0228,0.8672,-0.15,8/13,no detectable difference
+Within dataset,10,scGPT − HVG+PCA,-0.0169,-0.0611,0.0201,0.9549,-0.22,8/13,no detectable difference
+Within dataset,25,Geneformer − HVG+PCA,-0.0097,-0.0329,0.0109,0.746,-0.23,6/13,no detectable difference
+Within dataset,25,scGPT − HVG+PCA,-0.0162,-0.0397,0.0046,0.836,-0.38,8/13,no detectable difference
+Within dataset,50,Geneformer − HVG+PCA,-0.0032,-0.0191,0.0135,0.746,-0.1,5/13,no detectable difference
+Within dataset,50,scGPT − HVG+PCA,-0.0119,-0.0324,0.0067,0.6471,-0.32,7/13,no detectable difference
+Within dataset,100,Geneformer − HVG+PCA,0.0014,-0.0149,0.0185,0.9549,0.04,7/13,no detectable difference
+Within dataset,100,scGPT − HVG+PCA,-0.0062,-0.0248,0.0096,1.0,-0.19,7/13,no detectable difference
+Within dataset,all,Geneformer − HVG+PCA,0.0513,0.04,0.0632,0.0018,2.29,13/13,scFM better
+Within dataset,all,scGPT − HVG+PCA,0.0516,0.0392,0.0631,0.0018,2.24,13/13,scFM better
+Held-out donor,5,Geneformer − HVG+PCA,-0.0227,-0.0714,0.0182,0.6803,-0.27,7/13,no detectable difference
+Held-out donor,5,scGPT − HVG+PCA,-0.0479,-0.0996,0.0019,0.3874,-0.49,5/13,no detectable difference
+Held-out donor,10,Geneformer − HVG+PCA,-0.0168,-0.0527,0.0178,0.6471,-0.25,5/13,no detectable difference
+Held-out donor,10,scGPT − HVG+PCA,-0.0278,-0.0747,0.0141,0.8716,-0.32,8/13,no detectable difference
+Held-out donor,25,Geneformer − HVG+PCA,-0.0055,-0.0222,0.011,0.6803,-0.17,5/13,no detectable difference
+Held-out donor,25,scGPT − HVG+PCA,-0.0269,-0.056,-0.0007,0.4219,-0.51,6/13,no detectable difference
+Held-out donor,50,Geneformer − HVG+PCA,-0.0093,-0.026,0.0093,0.4581,-0.27,4/13,no detectable difference
+Held-out donor,50,scGPT − HVG+PCA,-0.0301,-0.0552,-0.0064,0.094,-0.64,3/13,no detectable difference
+Held-out donor,100,Geneformer − HVG+PCA,-0.0013,-0.0186,0.0172,0.8716,-0.04,6/13,no detectable difference
+Held-out donor,100,scGPT − HVG+PCA,-0.0201,-0.0442,0.0025,0.3594,-0.45,6/13,no detectable difference
+Held-out donor,all,Geneformer − HVG+PCA,0.0417,0.0266,0.0564,0.0022,1.47,12/13,scFM better
+Held-out donor,all,scGPT − HVG+PCA,0.0277,0.006,0.0465,0.1291,0.7,10/13,no detectable difference
+Held-out dataset,5,Geneformer − HVG+PCA,-0.0529,-0.1036,-0.0068,0.2552,-0.57,5/13,no detectable difference
+Held-out dataset,5,scGPT − HVG+PCA,-0.039,-0.0886,0.0062,0.7953,-0.43,6/13,no detectable difference
+Held-out dataset,10,Geneformer − HVG+PCA,-0.064,-0.1079,-0.022,0.0693,-0.78,4/13,no detectable difference
+Held-out dataset,10,scGPT − HVG+PCA,-0.0446,-0.0914,-0.0027,0.5811,-0.52,6/13,no detectable difference
+Held-out dataset,25,Geneformer − HVG+PCA,-0.0763,-0.1175,-0.0369,0.0056,-0.99,1/13,classical better
+Held-out dataset,25,scGPT − HVG+PCA,-0.0511,-0.0928,-0.0134,0.1291,-0.67,5/13,no detectable difference
+Held-out dataset,50,Geneformer − HVG+PCA,-0.083,-0.1242,-0.0444,0.0022,-1.08,1/13,classical better
+Held-out dataset,50,scGPT − HVG+PCA,-0.059,-0.0998,-0.0224,0.027,-0.79,3/13,classical better
+Held-out dataset,100,Geneformer − HVG+PCA,-0.0996,-0.1457,-0.0566,0.0018,-1.16,0/13,classical better
+Held-out dataset,100,scGPT − HVG+PCA,-0.0706,-0.1186,-0.0285,0.0078,-0.81,2/13,classical better
+Held-out dataset,all,Geneformer − HVG+PCA,-0.1071,-0.1988,-0.0507,0.0018,-0.71,0/13,classical better
+Held-out dataset,all,scGPT − HVG+PCA,-0.0828,-0.1354,-0.0411,0.0043,-0.91,2/13,classical better
