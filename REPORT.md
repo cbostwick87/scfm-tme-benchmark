@@ -87,8 +87,23 @@ flagged negligible** (|Δ| < 0.02).
 ### 3.1 H1 — in-distribution, at restricted label budgets: no advantage
 
 At every restricted budget from 5 to 100 labelled cells per class, within
-dataset, neither foundation model differs detectably from HVG+PCA. Deltas span
-−0.017 to +0.001, all CIs cross zero, all FDR p > 0.6.
+dataset, neither foundation model differs detectably from HVG+PCA: all ten
+contrasts return "no detectable difference" and **none is significant at
+FDR 0.05** (p range 0.150–1.000).
+
+Point estimates run from −0.059 to +0.001 — where they lean at all, they lean
+*against* the foundation models. Two details matter for reading this honestly
+rather than as a flat null:
+
+- The largest deviation is **scGPT at 5 labels per class, Δ = −0.059
+  [−0.115, −0.010]**, winning on only 3 of 13 datasets. Its bootstrap CI does
+  *not* cross zero, yet its FDR-corrected p is 0.150. The CI is on the mean
+  difference while the pre-specified primary test is Wilcoxon signed-rank on
+  ranks, so the two can disagree; the pre-specified test governs. The correct
+  reading is a *suggestive but unconfirmed* disadvantage for scGPT at the
+  smallest budget — not an established one, and not a flat null either.
+- Excluding that cell, the remaining eight contrasts (budgets 10–100) span
+  −0.017 to +0.001, every CI crosses zero, and every FDR p > 0.64.
 
 **This confirms the study's stated expectation, and it is the finding with the
 most direct practical consequence.**
