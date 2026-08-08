@@ -23,17 +23,28 @@
 # silent workaround: the loop is unchanged and still correct, it simply is not
 # the entry point for scVI.
 set -uo pipefail
+
+# PORTABILITY: locations come from the environment, defaulting to the
+# machine this was developed on. A fresh clone sets these rather than
+# editing the script.
+#   SCFM_DATA_ROOT     volume holding raw/ processed/ splits/ embeddings/ logs/
+#   SCFM_CONDA_PREFIX  conda install providing etc/profile.d/conda.sh
+#   SCFM_ENV           analysis environment to activate
+: "${SCFM_DATA_ROOT:=/mnt/fm-bench}"
+: "${SCFM_CONDA_PREFIX:=${SCFM_DATA_ROOT}/miniforge}"
+: "${SCFM_ENV:=${SCFM_DATA_ROOT}/envs/scfm-bench}"
+
 cd "$(dirname "$0")/.."
-source /mnt/fm-bench/miniforge/etc/profile.d/conda.sh
-conda activate /mnt/fm-bench/envs/scfm-bench
-export SCFM_DATA_ROOT=/mnt/fm-bench TMPDIR=/mnt/fm-bench/tmp
+source "${SCFM_CONDA_PREFIX}/etc/profile.d/conda.sh"
+conda activate "${SCFM_ENV}"
+export SCFM_DATA_ROOT TMPDIR="${SCFM_DATA_ROOT}/tmp"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4
 export PYTHONPATH=src
 
-LOG=/mnt/fm-bench/logs/fit_scvi_isolated.log
-OUT=/mnt/fm-bench/embeddings/scvi
-SPLITS=/mnt/fm-bench/splits
+LOG=${SCFM_DATA_ROOT}/logs/fit_scvi_isolated.log
+OUT=${SCFM_DATA_ROOT}/embeddings/scvi
+SPLITS=${SCFM_DATA_ROOT}/splits
 
 echo "=== per-split scVI fit $(date -u +%FT%TZ) ===" | tee -a "$LOG"
 done_n=0; ran=0; failed=0

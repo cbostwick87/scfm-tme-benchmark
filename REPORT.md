@@ -1,6 +1,7 @@
 # When do zero-shot single-cell foundation model embeddings beat classical representations for immune cell-type annotation in tumour microenvironment data?
 
-**Status: draft. Figures F2 and F3 pending a per-class rescoring pass now in progress.**
+All four hypotheses are resolved. Figures F1–F5 accompany this report; every
+number below is reproduced from the tables in `results/`.
 
 ---
 
@@ -74,6 +75,12 @@ PCA remains train-only; only the correction step sees test coordinates.
   change the training data there).
 - **Gene-space coverage varies by dataset** (Geneformer vocabulary coverage
   0.560–0.969), a per-dataset caveat rather than a property of the method.
+- **The ultra-rare regime is untested.** The <1% prevalence stratum contained
+  only 12 (dataset, cell type) instances across the whole corpus — too few to
+  test. Conclusions about rarity extend down to ~1% prevalence and no further.
+- **The mechanism analysis (§3.7) is descriptive.** It correlates across five
+  representations, which are not independent replicates, on a fixed subsample.
+  It motivates the next experiment; it does not establish causation.
 
 ---
 
@@ -148,9 +155,55 @@ across overlap spanning 0.538–0.946: Spearman ρ = −0.34 (p=0.25) and −0.1
 point estimate is at or below zero — if anything, opposite to the prediction.
 Underpowered at n=13 to exclude a weak association.
 
-### 3.6 H3 — rarity
+### 3.6 H3 — rarity: no rescue, and no trend
 
-*Pending the per-class rescoring pass.*
+Per-class F1 was recovered by refitting at the already-selected regularisation
+(no inner CV, so no selection on test). Classes were binned by pre-specified
+prevalence strata; the paired unit is the (dataset, cell type) pair.
+
+**Rarity does not change the direction of any result.** In distribution at
+unrestricted labels, the scFM gain is present in *every* stratum and is largest
+in the middle one (Geneformer +0.057 uncommon vs +0.035 rare, +0.037 common).
+Under dataset shift the penalty is present in every stratum too, and at
+unrestricted labels it is *largest for the rarest testable classes*
+(Geneformer −0.168, scGPT −0.175 in the 1–5% stratum, both FDR p < 0.005) —
+the opposite of the hypothesis that foundation models earn their keep on rare
+populations.
+
+Tested continuously rather than binned, the effect does not trend with
+prevalence in 11 of 12 cells (|ρ| ≤ 0.14, p > 0.15). The single exception is
+Geneformer under dataset shift at 10 labels (ρ = −0.26, p = 0.010), which is
+uncorrected for the 12 tests and should not be read as an established gradient.
+
+The <1% stratum had only 12 class-instances and was not tested. **This study
+therefore says nothing about genuinely ultra-rare populations**, which is where
+a rarity benefit would most plausibly live.
+
+### 3.7 Mechanism: the embeddings encode dataset identity
+
+The reversal in §3.3 has a measurable candidate explanation. Computing
+silhouette width twice on the same cells — once labelled by cell type (the
+signal) and once by dataset (the nuisance):
+
+| Representation | Cell type | Dataset |
+|---|---|---|
+| Geneformer | +0.017 | **+0.047** |
+| scGPT | +0.036 | +0.026 |
+| HVG+PCA | +0.020 | −0.010 |
+| scVI | **+0.059** | −0.035 |
+| Harmony | −0.001 | −0.053 |
+
+**Geneformer separates datasets more strongly than it separates cell types.**
+Both foundation models have positive dataset silhouette; all three classical
+representations have negative. Across the five representations, dataset
+silhouette orders perfectly with the macro-F1 lost going from within-dataset to
+held-out-dataset (Spearman ρ = +1.00, exact permutation p = 0.017).
+
+This is consistent with the frozen embedding encoding batch structure a linear
+head cannot discount, and it is *descriptive*: n = 5 representations are not
+independent replicates, the silhouette is computed on a fixed subsample, and
+correlation across five methods cannot establish causation. It motivates the
+next experiment rather than concluding this one.
 
 ---
 
@@ -173,13 +226,29 @@ On this evidence, for immune cell-type annotation in TME data:
 
 ## 5. Downstream implications
 
-The reversal in (3) is the result with consequences beyond this benchmark. The
-widening gap with label budget suggests the classical pipeline extracts
-increasing benefit from labels in a shifted domain while the frozen embedding
-does not — consistent with the zero-shot embedding encoding
-dataset-of-origin structure that a linear head cannot discount. This is a
-hypothesis the present design cannot test, and it is the natural next
-experiment.
+The reversal in (3) is the result with consequences beyond this benchmark, and
+§3.7 supplies direct evidence for why it happens: **both foundation-model
+embeddings carry positive dataset silhouette while all three classical
+representations carry negative**, and dataset silhouette orders perfectly with
+the transfer penalty across the five methods. The frozen embedding appears to
+encode dataset-of-origin structure that a linear head cannot discount, and more
+labels in a shifted domain help the classical pipeline more than they help a
+representation whose axes partly encode the wrong thing.
+
+That is a candidate mechanism, not a demonstrated one — five representations
+are not five independent replicates. The natural next experiments follow
+directly: (a) test whether an explicit batch-correction step applied *to the
+foundation-model embedding* recovers the transfer performance, and (b) test
+whether fine-tuning, which is out of scope here, removes the dataset structure
+that zero-shot embedding retains. Either result would sharpen the decision rule
+from "do not use these embeddings for transfer" to "use them for transfer only
+after correction".
+
+The rarity result adds a second implication: §3.6 rules out the most common
+defence of scFM embeddings — that they earn their keep on rare populations.
+Under dataset shift the penalty was *largest* for the rarest testable classes.
+The genuinely ultra-rare regime (<1% prevalence) remains untested here and is
+the one place that defence could still survive.
 
 For practitioners, the operational reading is that **the deployment scenario
 determines the answer**, and the scenario where foundation models are most

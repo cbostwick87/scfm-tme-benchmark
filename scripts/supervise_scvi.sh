@@ -16,13 +16,24 @@
 # A supervisor that retried indefinitely would quietly override that decision, so
 # it exits non-zero with a written verdict instead.
 set -uo pipefail
+
+# PORTABILITY: locations come from the environment, defaulting to the
+# machine this was developed on. A fresh clone sets these rather than
+# editing the script.
+#   SCFM_DATA_ROOT     volume holding raw/ processed/ splits/ embeddings/ logs/
+#   SCFM_CONDA_PREFIX  conda install providing etc/profile.d/conda.sh
+#   SCFM_ENV           analysis environment to activate
+: "${SCFM_DATA_ROOT:=/mnt/fm-bench}"
+: "${SCFM_CONDA_PREFIX:=${SCFM_DATA_ROOT}/miniforge}"
+: "${SCFM_ENV:=${SCFM_DATA_ROOT}/envs/scfm-bench}"
+
 cd "$(dirname "$0")/.."
 
 MAX_FAILURES=${MAX_FAILURES:-3}
 POLL=${POLL:-120}
-OUT=/mnt/fm-bench/embeddings/scvi
-LOG=/mnt/fm-bench/logs/supervise_scvi.log
-VERDICT=/mnt/fm-bench/logs/scvi_verdict.txt
+OUT=${SCFM_DATA_ROOT}/embeddings/scvi
+LOG=${SCFM_DATA_ROOT}/logs/supervise_scvi.log
+VERDICT=${SCFM_DATA_ROOT}/logs/scvi_verdict.txt
 
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOG"; }
 
@@ -63,7 +74,7 @@ while true; do
     failures=$((failures+1))
     log "fit not running at $(count)/75 -- restart $failures/$MAX_FAILURES"
     nohup bash scripts/fit_scvi_isolated.sh \
-      >> /mnt/fm-bench/logs/fit_scvi_wrapper.log 2>&1 &
+      >> ${SCFM_DATA_ROOT}/logs/fit_scvi_wrapper.log 2>&1 &
     sleep 30
     continue
   fi
