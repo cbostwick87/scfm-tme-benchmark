@@ -30,14 +30,15 @@ These are the reasons to trust the numbers, and they are enforced in code, not p
 
 | Commitment | Where enforced |
 |---|---|
-| HVG selection, PCA, scVI and Harmony are fit on the **training partition only**, then applied to calibration/test | `src/scfmbench/stages/s04_embed.py` |
+| HVG selection, PCA, scVI and Harmony are fit on the **training partition only**, then applied to calibration/test | `src/scfmbench/stages/s04c_classical.py`; every fit function in `src/scfmbench/models/classical.py` takes an explicit `train_mask` and `_check_train_mask` raises `LeakageError` on an all-True mask |
 | No donor spans partitions under leave-donor-out; no dataset spans partitions under leave-dataset-out | asserted in `src/scfmbench/splits.py` |
 | **Identical classifier head everywhere** - multinomial logistic regression, L2, strength by inner CV on training only | `src/scfmbench/stages/s05_sweep.py` |
 | Test partition is never touched for any tuning decision | inner CV only, `s05_sweep.py` |
 | **Datasets are the unit of replication** - seeds aggregated first, then tested across datasets | `src/scfmbench/stages/s06_stats.py` |
 | Baselines tuned as carefully as the scFM pipeline - HVG+PCA is the method to beat | `configs/default.yaml` baseline grids |
 | Pretraining-corpus overlap checked per dataset and reported | table `results/T1_dataset_manifest.csv` |
-| Zero-shot only - no fine-tuning of any foundation model | `s04_embed.py` (inference paths only) |
+| Zero-shot only - no fine-tuning of any foundation model | `s04_embed_geneformer.py` (forward passes under `torch.no_grad()`) and `s04b_embed_scgpt.py` (the released `scgpt.tasks.embed_data` inference path); no optimiser is constructed in either stage |
+| **Calibration partition never read by this project** - reserved for downstream work | `assert_calibration_untouched` in `src/scfmbench/splits.py` |
 | Every deviation and fallback logged with reason and timestamp | [`DECISIONS.md`](DECISIONS.md) |
 
 A negative result - scFMs not beating HVG+PCA in-distribution - is an **expected and
