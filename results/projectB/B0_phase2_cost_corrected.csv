@@ -1,0 +1,4 @@
+scope,n_fits,serial_h,h_at_8w_WRONG,h_at_6w_CORRECT,understated_by_h
+S4 x S1 (7 types x 5 seeds),35,11.2,2.8,3.8,0.9
+S4 x S1 + 3 S3 holdouts (7 x 5 x 4),140,44.6,11.4,15.2,3.8
+S4 x ALL S3 (7 x 5 x 14),490,156.1,39.8,53.1,13.3

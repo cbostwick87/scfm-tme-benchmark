@@ -1,0 +1,6 @@
+gate,measurement,value,detail,verdict
+A3(i) core utilisation,"joblib 8 tasks, 40k x 768 logistic fits",3.92x speedup at n_jobs=8,"19.3 mean busy cores of 32, peak 32; OpenBLAS pool=4, torch=4; per-worker efficiency 0.49","PASS - configuration effective, no oversubscription"
+A3(ii) scVI S4 refit,"5 epochs on S4(S3) holdout=Mast, 141,759 train cells, 2000 HVG",18.7 s/epoch (94 s for 5),1.9x A's T4 rate of 9.7 s/epoch; accelerator=cpu; 19.1 min per 60-epoch fit,PASS - no GPU escape required
+A3(ii) memory constraint,peak RSS of the S4 scVI fit,5.2 GiB per fit,8 workers = 41.6 GiB vs 53 GiB available (RISKY; A was OOM-killed twice at this level); 6 workers = 31.2 GiB,scVI CAPPED AT 6 WORKERS; conformal sweep keeps 8
+A3(ii) Phase 2 extrapolation,at scVI's FEASIBLE 6-worker speedup of 2.94x (= 6 x 0.49 per-worker efficiency),3.8 h / 15.2 h / 53.1 h,S4xS1 (35 fits) / S4xS1+3 S3 holdouts (140) / S4x all 13 S3 (490). Serial equivalents 11.2 / 44.6 / 156.1 h,"PASS - within budget at every scope, worst case 53.1 h"
+A3(ii) SUPERSEDED extrapolation,same fits divided by the 8-worker speedup of 3.92x,2.8 h / 11.4 h / 39.8 h,"WRONG: divided by a parallelism scVI cannot use, because memory caps it at 6 workers. Understates wall-clock by 33%",SUPERSEDED - do not use; retained so the correction is visible
