@@ -1,0 +1,15 @@
+label,compartment,n_datasets,n_cells,prevalence,eligible,reason
+CD4_T,immune,10,36316,0.15803238454140756,True,eligible
+CD8_T,immune,13,31935,0.13896806367248185,True,eligible
+Mono_Macro,immune,10,29649,0.12902032628230511,True,eligible
+B,immune,7,20961,0.09121370229024242,True,eligible
+Plasma,immune,10,18668,0.08123550376195056,True,eligible
+DC,immune,5,8165,0.03553074181574493,True,eligible
+Mast,immune,7,5242,0.022811040857089394,True,eligible
+Malignant,non_immune,8,25953,0.11293684535750498,False,non-immune context class
+Fibroblast,non_immune,9,16201,0.0705001283719392,False,non-immune context class
+NK,immune,4,10878,0.0473366086309459,False,present in 4 datasets (< 5)
+Endothelial,non_immune,7,10254,0.044621215747538086,False,non-immune context class
+Epithelial,non_immune,3,7151,0.03111822838020722,False,non-immune context class; present in 3 datasets (< 5)
+Treg,immune,3,5014,0.021818878072767306,False,present in 3 datasets (< 5)
+Neutrophil,immune,2,3414,0.014856332217875466,False,present in 2 datasets (< 5)
