@@ -68,11 +68,20 @@ PCA remains train-only; only the correction step sees test coordinates.
   than "evidence against".
 - **Pretraining-overlap confound, partially bounded.** BRCA_GSE176078 is a
   suspected member of scGPT's CELLxGENE-derived pretraining corpus, retained
-  with a pre-specified sensitivity analysis.
-- **Two post-hoc design changes**, both declared: extra seeds in the
-  low-budget × held-out-dataset cell (5→20), and reduced seeds at the
+  with a pre-specified sensitivity analysis. **That analysis is reported in
+  §3.8: excluding the dataset changes no conclusion** — zero sign flips and
+  zero significance changes across the 36 primary contrasts, largest shift
+  0.0095, and the flagged dataset is not an outlier in the direction
+  memorisation would predict (max |z| = 1.29 across 36 cells).
+- **Two post-hoc design changes**, both declared: extra seeds under
+  leave-dataset-out at budgets 5, 10, 25 and 50 (5→20 — four budgets, not the
+  single cell an earlier draft of this bullet implied), and reduced seeds at the
   unrestricted budget (5→2, justified by the measurement that the seed does not
-  change the training data there).
+  change the training data there). **The first is audited in §3.9: recomputing
+  the affected contrasts on the original 5 seeds changes nothing** — zero sign
+  flips, zero significance changes, largest shift 0.0076 — so the boost did not
+  produce the H2 conclusion. It also bought almost no precision (CI-width ratio
+  0.99), because the replication unit is the dataset, not the seed.
 - **Gene-space coverage varies by dataset** (Geneformer vocabulary coverage
   0.560–0.969), a per-dataset caveat rather than a property of the method.
 - **The ultra-rare regime is untested.** The <1% prevalence stratum contained
@@ -206,6 +215,89 @@ correlation across five methods cannot establish causation. It motivates the
 next experiment rather than concluding this one.
 
 ---
+
+### 3.8 Robustness check 1 — pretraining-overlap sensitivity
+
+`results/pretraining_overlap_audit.md` pre-specified that every primary contrast
+be recomputed with `BRCA_GSE176078` excluded. **That analysis was specified
+before any result was known but was never executed**; it is run here and
+reported in full. Nothing was re-tuned and no pre-specified analysis was
+altered: the same frozen aggregate → paired-contrast → BH-FDR path is used, and
+the only difference is which datasets enter it. The n=13 leg reproduces the
+shipped T3 exactly on all 108 contrasts (max difference 1e-16), which is
+asserted rather than assumed.
+
+**No conclusion changes.** Across the 36 primary contrasts against HVG+PCA
+there are **zero sign flips and zero significance changes**; the largest shift
+in any point estimate is 0.0095, below the pre-specified negligibility floor of
+0.02. The headline contrasts:
+
+| Contrast | n=13 | n=12 (excl. flagged) |
+|---|---|---|
+| Within dataset, all labels, Geneformer | +0.0513 [+0.0400, +0.0632], p=0.0018 | +0.0533 [+0.0415, +0.0653], p=0.0035 |
+| Within dataset, all labels, scGPT | +0.0516 [+0.0392, +0.0631], p=0.0018 | +0.0507 [+0.0377, +0.0635], p=0.0035 |
+| Held-out dataset, all labels, Geneformer | −0.1071 [−0.1988, −0.0507], p=0.0018 | −0.1086 [−0.2056, −0.0470], p=0.0035 |
+| Held-out dataset, all labels, scGPT | −0.0828 [−0.1354, −0.0411], p=0.0043 | −0.0857 [−0.1417, −0.0408], p=0.0085 |
+
+Across the full 108-contrast family (including scVI and Harmony comparators)
+there is **1 sign flip and 3 significance changes**, all reported rather than
+suppressed. None is a primary contrast and all four sit on effects at or below
+the negligibility floor or just at the FDR boundary: `scgpt − harmony` at
+held-out-dataset/10 labels moves +0.0028 → −0.0008 (both p > 0.87, i.e. a sign
+flip on a non-effect), and three comparator contrasts cross from p≈0.047 to
+p≈0.07 — losing significance purely because dropping a dataset costs one
+degree of freedom on n=13.
+
+**H3 (rarity) is unaffected too.** Recomputed over the per-class table, 36 rows:
+1 sign flip and 1 significance change, both in the 5–20% stratum at 10 labels on
+effects of |Δ| ≤ 0.012, and both far below the negligibility floor. Every
+budget-all stratum — where the H3 conclusion lives — retains its sign and its
+significance, including the rarest-classes result under dataset shift
+(Geneformer −0.168 → −0.177, scGPT −0.175 → −0.187, both still p < 0.003).
+
+**The audit's second pre-specified check also returns nothing.** It asked
+whether the scFM margin is unusually large *on the flagged dataset* relative to
+its margin elsewhere, which would itself be evidence of memorisation. Across 36
+scheme × budget × model cells the largest standardised deviation is |z| = 1.29
+and **no cell exceeds |z| = 2**. The flagged dataset is not an outlier in the
+direction memorisation would predict.
+
+Tables: `results/T10_pretraining_sensitivity.csv`,
+`results/T11_memorisation_check.csv`,
+`results/T13_h3_pretraining_sensitivity.csv`.
+
+### 3.9 Robustness check 2 — does the post-hoc seed increase carry H2?
+
+Seeds were raised from 5 to 20 after the design was fixed, under
+leave-dataset-out. That is the condition H2 lives in, so a reader may reasonably
+ask whether the added replication produced the conclusion rather than merely
+measuring it. The affected contrasts are recomputed here on **seeds 0–4 only**
+— the original pre-boost set — beside the 20-seed values.
+
+One correction to §2.2 while reporting this: the boost was applied to **four
+budgets (5, 10, 25 and 50)**, not to a single low-budget cell. All four are
+included below.
+
+**The conclusion is unchanged.** Across all 24 affected contrasts:
+**zero sign flips, zero significance changes**, largest shift in any point
+estimate 0.0076 — again below the negligibility floor. The H2 comparisons
+against scVI and Harmony hold their direction and their significance at 5 seeds.
+
+The more interesting result is *why* it makes so little difference. Median CI
+width is **0.0819 at 20 seeds versus 0.0831 at 5** — a ratio of 0.99, i.e. the
+extra 15 seeds bought essentially no precision. That is exactly what the
+design's own replication rule predicts: the unit of replication is the dataset
+(n=13), so the interval is set by between-dataset variance, which added seeds
+cannot reduce. The seed boost lowered within-dataset resampling noise, which was
+never the binding term.
+
+So the post-hoc change was close to inert. It could not have manufactured the H2
+result, and — stated plainly because it cuts against the decision to make it —
+it also did not deliver the power increase it was intended to deliver. The
+underpowered-cell concern that motivated it is better addressed by more
+datasets, not more seeds.
+
+Table: `results/T12_seed_sensitivity.csv`.
 
 ## 4. Decision rule
 

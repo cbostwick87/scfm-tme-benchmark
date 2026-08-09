@@ -1,0 +1,21 @@
+{
+  "flagged_dataset": "BRCA_GSE176078",
+  "r1_contrasts": 108,
+  "r1_sign_flips": 1,
+  "r1_significance_changes": 3,
+  "r1_max_abs_delta_shift": 0.009475469550006624,
+  "r1_median_abs_delta_shift": 0.0021943154096826963,
+  "memorisation_max_abs_z": 1.2935585909751846,
+  "memorisation_n_cells_z_gt_2": 0,
+  "memorisation_n_cells": 36,
+  "boosted_budgets": [
+    "10",
+    "25",
+    "5",
+    "50"
+  ],
+  "r2_contrasts": 24,
+  "r2_sign_flips": 0,
+  "r2_significance_changes": 0,
+  "r2_max_abs_delta_shift": 0.007598004496045002
+}

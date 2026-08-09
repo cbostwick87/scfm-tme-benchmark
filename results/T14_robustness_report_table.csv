@@ -1,0 +1,25 @@
+scheme,budget,contrast,delta_n13,ci_n13,p_fdr_n13,delta_n12,ci_n12,p_fdr_n12,conclusion_changes
+S1_within_dataset,5,geneformer - hvg_pca,-0.0238,"[-0.0618, +0.0097]",0.7215,-0.026,"[-0.0660, +0.0102]",0.5968,False
+S1_within_dataset,5,scgpt - hvg_pca,-0.0594,"[-0.1154, -0.0104]",0.1496,-0.067,"[-0.1254, -0.0165]",0.0738,False
+S1_within_dataset,10,geneformer - hvg_pca,-0.0094,"[-0.0431, +0.0228]",0.8672,-0.0117,"[-0.0474, +0.0227]",0.754,False
+S1_within_dataset,10,scgpt - hvg_pca,-0.0169,"[-0.0611, +0.0201]",0.9549,-0.0222,"[-0.0679, +0.0163]",0.9268,False
+S1_within_dataset,25,geneformer - hvg_pca,-0.0097,"[-0.0329, +0.0109]",0.746,-0.009,"[-0.0334, +0.0133]",0.8828,False
+S1_within_dataset,25,scgpt - hvg_pca,-0.0162,"[-0.0397, +0.0046]",0.836,-0.0182,"[-0.0434, +0.0040]",0.6987,False
+S1_within_dataset,50,geneformer - hvg_pca,-0.0032,"[-0.0191, +0.0135]",0.746,-0.0023,"[-0.0194, +0.0155]",0.8001,False
+S1_within_dataset,50,scgpt - hvg_pca,-0.0119,"[-0.0324, +0.0067]",0.6471,-0.0139,"[-0.0355, +0.0060]",0.52,False
+S1_within_dataset,100,geneformer - hvg_pca,0.0014,"[-0.0149, +0.0185]",0.9549,0.0026,"[-0.0149, +0.0208]",0.8375,False
+S1_within_dataset,100,scgpt - hvg_pca,-0.0062,"[-0.0248, +0.0096]",1.0,-0.0079,"[-0.0273, +0.0089]",0.8828,False
+S1_within_dataset,all,geneformer - hvg_pca,0.0513,"[+0.0400, +0.0632]",0.0018,0.0533,"[+0.0415, +0.0653]",0.0035,False
+S1_within_dataset,all,scgpt - hvg_pca,0.0516,"[+0.0392, +0.0631]",0.0018,0.0507,"[+0.0377, +0.0635]",0.0035,False
+S3_leave_dataset_out,5,geneformer - hvg_pca,-0.0529,"[-0.1036, -0.0068]",0.2552,-0.0572,"[-0.1103, -0.0075]",0.2218,False
+S3_leave_dataset_out,5,scgpt - hvg_pca,-0.039,"[-0.0886, +0.0062]",0.7953,-0.0455,"[-0.0973, +0.0022]",0.6512,False
+S3_leave_dataset_out,10,geneformer - hvg_pca,-0.064,"[-0.1079, -0.0220]",0.0693,-0.0677,"[-0.1141, -0.0232]",0.0866,False
+S3_leave_dataset_out,10,scgpt - hvg_pca,-0.0446,"[-0.0914, -0.0027]",0.5811,-0.05,"[-0.0996, -0.0056]",0.4953,False
+S3_leave_dataset_out,25,geneformer - hvg_pca,-0.0763,"[-0.1175, -0.0369]",0.0056,-0.0796,"[-0.1236, -0.0382]",0.0112,False
+S3_leave_dataset_out,25,scgpt - hvg_pca,-0.0511,"[-0.0928, -0.0134]",0.1291,-0.0557,"[-0.1000, -0.0154]",0.0866,False
+S3_leave_dataset_out,50,geneformer - hvg_pca,-0.083,"[-0.1242, -0.0444]",0.0022,-0.0853,"[-0.1301, -0.0447]",0.0044,False
+S3_leave_dataset_out,50,scgpt - hvg_pca,-0.059,"[-0.0998, -0.0224]",0.027,-0.0638,"[-0.1067, -0.0247]",0.0278,False
+S3_leave_dataset_out,100,geneformer - hvg_pca,-0.0996,"[-0.1457, -0.0566]",0.0018,-0.103,"[-0.1519, -0.0574]",0.0035,False
+S3_leave_dataset_out,100,scgpt - hvg_pca,-0.0706,"[-0.1186, -0.0285]",0.0078,-0.0751,"[-0.1261, -0.0300]",0.0151,False
+S3_leave_dataset_out,all,geneformer - hvg_pca,-0.1071,"[-0.1988, -0.0507]",0.0018,-0.1086,"[-0.2056, -0.0470]",0.0035,False
+S3_leave_dataset_out,all,scgpt - hvg_pca,-0.0828,"[-0.1354, -0.0411]",0.0043,-0.0857,"[-0.1417, -0.0408]",0.0085,False
