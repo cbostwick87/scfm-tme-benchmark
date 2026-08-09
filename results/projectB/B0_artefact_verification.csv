@@ -1,0 +1,20 @@
+artefact,check,status,detail
+cell_index,STRUCTURE,PASS,"229801 rows, 229801 unique, 13 datasets"
+checkpoint_sha256.txt,HASH,PASS,"5 matched, 0 MISMATCHED, 0 absent"
+scgpt_checkpoint_sha256.txt,HASH,PASS,"3 matched, 0 MISMATCHED, 0 absent"
+raw_data_sha256,HASH,PASS,"26/26 matched, 0 MISMATCHED, 0 absent"
+embeddings/geneformer,STRUCTURE,PASS,"127 shards, 229801 cells (229801 unique), dim=[768]"
+embeddings/scgpt,STRUCTURE,PASS,"53 shards, 229801 cells (229801 unique), dim=[512]"
+embeddings/hvg_pca,STRUCTURE,PASS,"75 per-split files, each 229801 cells aligned, dim=[100]"
+embeddings/scvi,STRUCTURE,PASS,"75 per-split files, each 229801 cells aligned, dim=[30]"
+embeddings/harmony,STRUCTURE,PASS,"75 per-split files, each 229801 cells aligned, dim=[100]"
+splits (S1/S2/S3),STRUCTURE,PASS,"75 files, all aligned, calibration non-empty in all"
+splits/S1_within_dataset,INVARIANT,PASS,train 0.600 / calibration 0.200 / test 0.200 (n=5)
+splits/S2_leave_donor_out,INVARIANT,PASS,train 0.613 / calibration 0.179 / test 0.208 (n=5)
+splits/S3_leave_dataset_out,INVARIANT,PASS,train 0.689 / calibration 0.234 / test 0.077 (n=65)
+T9 dataset silhouette (A6),INVARIANT,PASS,geneformer +0.047218; scgpt +0.025745; hvg_pca -0.010259; scvi -0.035006; harmony -0.052749
+T2_results_long,STRUCTURE,PASS,"47241 rows, C_selected and n_dims_selected present (100.0% / 100.0% non-null)"
+T10_pretraining_sensitivity.csv,STRUCTURE,PASS,108 rows
+T11_memorisation_check.csv,STRUCTURE,PASS,36 rows
+T12_seed_sensitivity.csv,STRUCTURE,PASS,24 rows
+T13_h3_pretraining_sensitivity.csv,STRUCTURE,PASS,36 rows
