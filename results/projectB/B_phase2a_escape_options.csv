@@ -1,0 +1,5 @@
+option,phase2a_h,phase2_h,cost,basis,verdict
+"A. Proceed on this box, 6x2t",41.7,49.8,none,"MEASURED full pipeline: 29.9 s/epoch at 6-way, 8.46 GiB peak RSS, 51 GiB of 61.5 (83%)",VIABLE but 41.7 h is 40% over the 29.9 h I last reported; two days of wall-clock
+B. GPU host (T4) for scVI refits only,,,a GPU instance,"A measured 9.7 s/epoch on a T4 vs 29.9 here = 3.1x on the scVI step alone; but the host has 4 CPUs / 15 GiB and one fit peaks at 8.46 GiB, so concurrency there is 1, not 6","NOT obviously better: 1 fit x 3.1x faster loses to 6 fits x 1x. Needs measurement, not assumption"
+C. Reduce S4 x S3 crossing (brief's declared escape),,,scope,490 fits = 7 types x 5 seeds x 14 parents. Dropping to 4 S3 parents gives 7x5x5=175 fits,Operator explicitly said come back before cutting scope; NOT taken unilaterally
+D. HVG+PCA as sole classical comparator (brief's other escape),0.0,8.1,scVI+Harmony arms under S4,Eliminates Phase 2a entirely; B4 would rest on HVG+PCA vs the two scFMs,"Cheapest, but B2's representation count is the axis the brief said to GROW, not shrink"
