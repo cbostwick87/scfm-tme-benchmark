@@ -1,0 +1,17 @@
+scheme,stratum,rep,n_datasets,mean_diff,ci_lo,ci_hi,dz,p,q_bh
+S1_within_dataset,1-5%,geneformer,7,0.0098,-0.0237,0.055,0.164,1.0,1.0
+S1_within_dataset,1-5%,scgpt,7,0.029,-0.0303,0.0969,0.309,0.8125,0.9286
+S1_within_dataset,1-5%,scvi,7,0.0285,-0.0015,0.0602,0.633,0.2188,0.5835
+S1_within_dataset,1-5%,harmony,7,0.0231,-0.0478,0.0813,0.243,0.4688,0.9244
+S1_within_dataset,5-20%,geneformer,13,0.0259,0.0014,0.0553,0.501,0.1677,0.5366
+S1_within_dataset,5-20%,scgpt,13,0.0196,-0.0067,0.0478,0.373,0.1465,0.5366
+S1_within_dataset,5-20%,scvi,13,-0.0073,-0.0325,0.0121,-0.169,0.7869,0.9286
+S1_within_dataset,5-20%,harmony,13,-0.0124,-0.0545,0.018,-0.178,0.7354,0.9286
+S3_leave_dataset_out,1-5%,geneformer,7,-0.0575,-0.2199,0.0495,-0.274,0.9375,1.0
+S3_leave_dataset_out,1-5%,scgpt,7,-0.0404,-0.1119,0.0249,-0.402,0.5781,0.9244
+S3_leave_dataset_out,1-5%,scvi,7,0.0083,-0.0343,0.038,0.152,0.2969,0.6786
+S3_leave_dataset_out,1-5%,harmony,7,0.0226,0.0045,0.0421,0.812,0.0781,0.5366
+S3_leave_dataset_out,5-20%,geneformer,13,-0.027,-0.0765,0.0177,-0.303,0.6355,0.9244
+S3_leave_dataset_out,5-20%,scgpt,13,-0.0071,-0.0476,0.0224,-0.104,0.5879,0.9244
+S3_leave_dataset_out,5-20%,scvi,13,0.0257,0.005,0.0494,0.598,0.0479,0.5366
+S3_leave_dataset_out,5-20%,harmony,13,0.0178,-0.0267,0.052,0.232,0.1099,0.5366
