@@ -68,6 +68,13 @@ splits/*.parquet
 results/shards/
 results/_scratch/
 results/*.tmp
+# Project B writes its shards one level deeper (results/projectB/shards/), which
+# `results/shards/` does NOT match. Rule C6 keeps conformal score arrays on the
+# volume; these patterns are path-independent so a future phase or subdirectory
+# cannot reintroduce the gap.
+**/shards/
+results/**/*.parquet
+results/**/_scratch/
 logs/
 *.log
 
