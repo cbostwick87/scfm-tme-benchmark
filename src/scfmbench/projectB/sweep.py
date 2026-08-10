@@ -23,6 +23,8 @@ Two leakage controls are enforced here rather than assumed:
 """
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -122,6 +124,10 @@ def conformal_rows(clf, std, Ez, y, calib_mask, test_mask, dataset,
                                  "variant": variant,
                                  "coverage_gap": (1 - alpha) - s["coverage"],
                                  **s,
-                                 "per_class_json": pd.io.json.ujson_dumps(per_class)
-                                 if hasattr(pd.io.json, "ujson_dumps") else str(per_class)})
+                                 # keyed by CLASS NAME, not index: the index is only
+                                 # meaningful alongside this run's clf.classes_, and B5
+                                 # aggregates per-class coverage ACROSS runs whose label
+                                 # spaces differ (S4 drops one class, S3 holdouts vary).
+                                 "per_class_json": json.dumps(
+                                     {cls[k]: v for k, v in per_class.items()})})
     return rows, calrows
