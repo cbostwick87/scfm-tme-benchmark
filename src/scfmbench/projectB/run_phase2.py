@@ -122,19 +122,32 @@ def run_one(parent: str, holdout: str, force: bool = False) -> tuple[str, int, f
     Xh = Xn[:, hv].tocsr(); del Xn
 
     emb: dict[str, np.ndarray] = {}
-    # PROVENANCE, not a path. These three are refit in memory from the S4 train mask and
-    # are never read from A's cache, so the guard must be shown what was ACTUALLY used.
-    # An earlier version passed ROOT/"embeddings"/rep -- A's parent-split directory --
-    # which the guard correctly rejected: it is exactly the artefact it exists to refuse.
-    prov = f"inmemory__s4-{holdout}__parent-{parent}"
     pca_tf, _ = classical.fit_pca(Xh, tr_mask, CLASSICAL["hvg_pca"], seed)
     emb["hvg_pca"] = pca_tf(Xh)
     emb["harmony"], _ = DC.fit_harmony(emb["hvg_pca"], batch, tr_mask, seed=seed)
     emb["scvi"], _ = DC.fit_scvi(Xh, tr_mask, batch, n_latent=CLASSICAL["scvi"],
                                  seed=seed, early_stopping=True)
     del Xh
-    for rep in CLASSICAL:
-        S4.assert_s4_refit_required(rep, prov)   # proves the S4 refit, not A's cache
+
+    # LEAK CHECK on the FITTED OBJECT, not on a string. assert_s4_refit_required()
+    # inspects a PATH, which is the right check when a representation is loaded from
+    # disk; here nothing is loaded, so passing it any string is tautological -- a
+    # fixed template always contains the "__s4-" marker and the call can never raise.
+    # What must actually be proven is that each refit representation was fitted
+    # WITHOUT the held-out cells. That is verifiable from the fit itself: a
+    # train-fitted embedding is a deterministic function of the train rows, so
+    # refitting on the same mask must reproduce it, and refitting on a mask that
+    # INCLUDES held-out cells must not. We assert the cheap, decisive half -- the
+    # train mask carries zero held-out cells and every arm was fit from that mask.
+    ho_mask = y == holdout
+    if (tr_mask & ho_mask).any():
+        raise ValueError(f"{tag}: {int((tr_mask & ho_mask).sum())} held-out cells in the "
+                         f"fit mask -- the S4 representations would be leaked")
+    for rep, Z in emb.items():
+        if Z.shape[0] != len(y):
+            raise ValueError(f"{tag}: {rep} embedding has {Z.shape[0]} rows, expected {len(y)}")
+        if not np.isfinite(Z).all():
+            raise ValueError(f"{tag}: {rep} embedding contains non-finite values")
 
     rows = []
     for rep in list(CLASSICAL) + SCFM:
